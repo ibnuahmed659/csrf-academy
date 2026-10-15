@@ -1,0 +1,511 @@
+import type { Tutorial } from '../types'
+import { ATTACKER, BROWSER, TARGET } from '../cast'
+
+export const bypassTutorials: Tutorial[] = [
+  {
+    id: 'xss-beats-csrf',
+    title: 'When XSS defeats CSRF',
+    subtitle: 'Why script injection overrides every token.',
+    category: 'Bypasses',
+    level: 'advanced',
+    accent: 'danger',
+    summary:
+      'Every CSRF defence assumes the attacker cannot read your pages. Cross-site scripting breaks that assumption. Once code runs on your origin, it can read the token and forge perfect requests.',
+    keyPoints: [
+      'Tokens stop cross-site requests, not same-site scripts.',
+      'XSS removes the same-origin boundary that protects the token.',
+      'The real fix is preventing XSS in the first place.',
+    ],
+    scenes: [
+      {
+        id: 's1',
+        title: 'The one thing tokens assume',
+        duration: 11,
+        caption: 'Every CSRF token relies on a promise: that the attacker cannot read your page. Cross-site scripting makes that promise false.',
+        visual: {
+          kind: 'title',
+          badge: 'Bypasses',
+          title: 'When XSS defeats CSRF',
+          subtitle: 'Script injection overrides tokens.',
+        },
+      },
+      {
+        id: 's2',
+        title: 'Tokens vs cross-site',
+        duration: 12,
+        caption: 'A CSRF token blocks a request from evil.example, because that page cannot read the token from your site.',
+        visual: {
+          kind: 'flow',
+          nodes: [ATTACKER, BROWSER, TARGET],
+          packets: [
+            { from: 'attacker', to: 'browser', label: 'cross-site POST', at: 0.2, tone: 'forged' },
+            { from: 'browser', to: 'target', label: 'no valid token', at: 0.6, tone: 'blocked' },
+          ],
+          note: 'Blocked — the attacker never saw the token.',
+        },
+      },
+      {
+        id: 's3',
+        title: 'Now inject a script',
+        duration: 13,
+        caption: 'If the site has an XSS flaw, the attacker runs their JavaScript on vault.example itself. It is same-origin now.',
+        visual: {
+          kind: 'code',
+          title: 'the injection',
+          lang: 'html',
+          code: 'https://vault.example/search?q=<script>\nfetch("/account/email").then(r=>r.text())\n</script>',
+        },
+      },
+      {
+        id: 's4',
+        title: 'Reading the token',
+        duration: 13,
+        caption: 'Same-origin script can read the page, including any CSRF token, because the same-origin policy no longer separates it from your data.',
+        visual: {
+          kind: 'code',
+          title: 'same-origin read',
+          lang: 'javascript',
+          code: 'const page = await fetch("/settings").then(r=>r.text())\nconst token = page.match(/csrf_token" value="([^"]+)/)[1]\n// the attacker now holds a valid token',
+        },
+      },
+      {
+        id: 's5',
+        title: 'A perfect forged request',
+        duration: 13,
+        caption: 'With the token in hand, the attacker sends a request that passes every CSRF check. Cookie, token, Origin — all correct.',
+        visual: {
+          kind: 'flow',
+          nodes: [BROWSER, TARGET],
+          packets: [
+            { from: 'browser', to: 'target', label: 'POST + cookie + real token', at: 0.3, tone: 'cookie' },
+            { from: 'target', to: 'browser', label: '200 OK — accepted', at: 0.75, tone: 'good' },
+          ],
+          note: 'CSRF defences cannot detect this — it is same-origin.',
+        },
+      },
+      {
+        id: 's5b',
+        title: 'SameSite cannot save you',
+        duration: 12,
+        caption: 'SameSite does not help either. The forged request is same-site, so the cookie is attached as normal.',
+        visual: {
+          kind: 'bullets',
+          heading: 'Every layer fails',
+          items: [
+            'SameSite: request is same-site.',
+            'Origin: the origin is genuinely yours.',
+            'Token: read directly from your page.',
+          ],
+        },
+      },
+      {
+        id: 's6',
+        title: 'Result',
+        duration: 11,
+        caption: 'The account is fully taken over, and no CSRF control raised an alarm, because none of them were designed for this.',
+        visual: {
+          kind: 'impact',
+          heading: 'Full bypass',
+          before: 'a valid token you cannot read',
+          after: 'a valid token the attacker read',
+          note: 'XSS wins.',
+        },
+      },
+      {
+        id: 's7',
+        title: 'The takeaway',
+        duration: 11,
+        caption: 'CSRF tokens are not a silver bullet. Prevent XSS with output encoding, and treat any XSS as a total compromise.',
+        visual: {
+          kind: 'bullets',
+          heading: 'Remember',
+          items: [
+            'Tokens only stop cross-site, not same-site, scripts.',
+            'XSS defeats every CSRF defence.',
+            'Fix the injection, not just the token.',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 'samesite-bypass',
+    title: 'Bypassing SameSite',
+    subtitle: 'The gaps Lax leaves open.',
+    category: 'Bypasses',
+    level: 'advanced',
+    accent: 'danger',
+    summary:
+      'SameSite is powerful, but it is not airtight. Lax still permits top-level GET navigations, and a few timing and subdomain tricks can reopen doors. Treat it as one layer, never the only one.',
+    keyPoints: [
+      'Lax allows top-level GET navigations with cookies.',
+      'The “Lax + POST” grace window exists for newly set cookies.',
+      'Subdomain and open-redirect tricks can turn GETs into attacks.',
+    ],
+    scenes: [
+      {
+        id: 's1',
+        title: 'Powerful, not perfect',
+        duration: 10,
+        caption: 'SameSite stopped a huge amount of CSRF overnight. But skilled attackers look for the gaps it leaves.',
+        visual: {
+          kind: 'title',
+          badge: 'Bypasses',
+          title: 'Bypassing SameSite',
+          subtitle: 'The gaps Lax leaves open.',
+        },
+      },
+      {
+        id: 's2',
+        title: 'Lax allows top-level GET',
+        duration: 12,
+        caption: 'Under Lax, a top-level GET navigation still carries the cookie. If any sensitive action uses GET, that is an open door.',
+        visual: {
+          kind: 'bullets',
+          heading: 'What Lax still sends',
+          items: [
+            'Cookies on top-level GET navigations.',
+            'So a GET that changes state is exposed.',
+            'This is why GET must never change state.',
+          ],
+        },
+      },
+      {
+        id: 's3',
+        title: 'The two-minute window',
+        duration: 13,
+        caption: 'A newly set cookie is exempt from Lax for a short grace period. An attacker who can force a fresh cookie can exploit that window.',
+        visual: {
+          kind: 'bullets',
+          heading: 'The “Lax + POST” grace',
+          items: [
+            'Applies only to brand-new cookies.',
+            'Lasts around two minutes.',
+            'Can allow a cross-site POST right after login.',
+          ],
+        },
+      },
+      {
+        id: 's4',
+        title: 'Method override',
+        duration: 13,
+        caption: 'Some servers turn a GET into a state-changing action via a method override parameter. Lax hands them the cookie on the GET.',
+        visual: {
+          kind: 'code',
+          title: 'GET that writes',
+          lang: 'http',
+          code: 'GET /account/email?_method=POST&value=attacker@evil.example\nCookie: session=abc123  (sent: top-level GET)',
+        },
+      },
+      {
+        id: 's5',
+        title: 'Subdomain and redirect tricks',
+        duration: 13,
+        caption: 'A writable subdomain can set cookies on the parent, and an open redirect on your own site can turn a cross-site link into a same-site navigation.',
+        visual: {
+          kind: 'flow',
+          nodes: [ATTACKER, BROWSER, TARGET],
+          packets: [
+            { from: 'attacker', to: 'browser', label: 'link to your redirect', at: 0.2, tone: 'forged' },
+            { from: 'browser', to: 'target', label: 'redirect to sensitive URL', at: 0.6, tone: 'cookie' },
+          ],
+          note: 'An open redirect on your own origin becomes a pivot.',
+        },
+      },
+      {
+        id: 's5b',
+        title: 'Cookie scope matters',
+        duration: 12,
+        caption: 'A cookie set by a subdomain is a classic wedge. The __Host- prefix, which forbids domain scoping, closes it.',
+        visual: {
+          kind: 'code',
+          title: 'lock it down',
+          lang: 'http',
+          code: 'Set-Cookie: __Host-session=abc; Path=/; Secure; SameSite=Lax\n\n// cannot be set by a subdomain',
+        },
+      },
+      {
+        id: 's6',
+        title: 'Impact',
+        duration: 11,
+        caption: 'Each gap is small, but chained together they reopen the attack. SameSite alone is never the whole story.',
+        visual: {
+          kind: 'impact',
+          heading: 'Defence weakened',
+          before: 'SameSite=Lax only',
+          after: 'token + strict CORS + safe methods',
+          note: 'Layering closes the gaps.',
+        },
+      },
+      {
+        id: 's7',
+        title: 'The takeaway',
+        duration: 11,
+        caption: 'Keep Lax as your default, but add tokens, avoid GET writes, and lock down cookies with the __Host- prefix.',
+        visual: {
+          kind: 'bullets',
+          heading: 'Remember',
+          items: [
+            'Lax permits top-level GET with cookies.',
+            'New-cookie grace and subdomains are gaps.',
+            'Layer defences; never rely on one.',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 'weak-token-replay',
+    title: 'Weak tokens and replay',
+    subtitle: 'When the counter-measure is breakable.',
+    category: 'Bypasses',
+    level: 'advanced',
+    accent: 'danger',
+    summary:
+      'A CSRF token is only as good as its randomness and its lifecycle. Predictable tokens, tokens that never rotate, or tokens accepted from anywhere make the defence collapse quietly.',
+    keyPoints: [
+      'Tokens must be unpredictable — no timestamps, no counters.',
+      'Tokens should be per-session and validated server-side.',
+      'Accepting a token from a cookie alone invites replay.',
+    ],
+    scenes: [
+      {
+        id: 's1',
+        title: 'A lock made of glass',
+        duration: 11,
+        caption: 'A weak token is worse than no token, because it feels safe while being easy to crack.',
+        visual: {
+          kind: 'title',
+          badge: 'Bypasses',
+          title: 'Weak tokens and replay',
+          subtitle: 'When the counter-measure is breakable.',
+        },
+      },
+      {
+        id: 's2',
+        title: 'Predictable',
+        duration: 12,
+        caption: 'If the token is a timestamp, a counter, or a simple hash of the user id, an attacker can simply guess it.',
+        visual: {
+          kind: 'code',
+          title: 'predictable tokens',
+          lang: 'text',
+          code: 'csrf=1712345678        ← a timestamp\ncsrf=10042             # a counter\ncsrf=md5("user-42")    ← a derived value',
+        },
+      },
+      {
+        id: 's3',
+        title: 'Predictable = forgeable',
+        duration: 12,
+        caption: 'Once the pattern is known, the attacker generates a valid token themselves. The check passes, and the defence is gone.',
+        visual: {
+          kind: 'bullets',
+          heading: 'Broken randomness',
+          items: [
+            'Guessable values from time or counters.',
+            'Tokens derived from public data.',
+            'Short tokens brute-forced quickly.',
+          ],
+        },
+      },
+      {
+        id: 's4',
+        title: 'Never rotating',
+        duration: 12,
+        caption: 'A single token for the whole session means one leak compromises every future request. Tokens should shorten their useful life.',
+        visual: {
+          kind: 'bullets',
+          heading: 'Lifecycle mistakes',
+          items: [
+            'One token shared across every session.',
+            'A token that never expires.',
+            'A token that survives logout and back.',
+          ],
+        },
+      },
+      {
+        id: 's5',
+        title: 'The replay trap',
+        duration: 13,
+        caption: 'If the server accepts a token from a cookie alone, an attacker who can set a cookie can replay any value, and the check passes.',
+        visual: {
+          kind: 'flow',
+          nodes: [ATTACKER, BROWSER, TARGET],
+          packets: [
+            { from: 'attacker', to: 'browser', label: 'set cookie csrf=v', at: 0.2, tone: 'forged' },
+            { from: 'browser', to: 'target', label: 'header + cookie = v', at: 0.6, tone: 'cookie' },
+            { from: 'target', to: 'browser', label: 'match → 200', at: 0.85, tone: 'good' },
+          ],
+          note: 'The check compared two values the attacker controlled.',
+        },
+      },
+      {
+        id: 's5b',
+        title: 'Cookie injection again',
+        duration: 12,
+        caption: 'This is why double-submit needs a __Host- cookie: without it, a subdomain or a cookie-fixing bug lets the attacker supply both halves.',
+        visual: {
+          kind: 'bullets',
+          heading: 'Where replay starts',
+          items: [
+            'A writable subdomain sets the cookie.',
+            'A cookie-tossing bug fixes the value.',
+            'Then both sides of the check agree.',
+          ],
+        },
+      },
+      {
+        id: 's6',
+        title: 'Result',
+        duration: 11,
+        caption: 'The site believes it has token protection. In reality the token is predictable, or the attacker has replayed it with a forged cookie.',
+        visual: {
+          kind: 'impact',
+          heading: 'A false sense of safety',
+          before: '“we validate csrf_token”',
+          after: 'a token the attacker guessed',
+          note: 'Strength and lifecycle matter.',
+        },
+      },
+      {
+        id: 's7',
+        title: 'The takeaway',
+        duration: 11,
+        caption: 'Generate tokens with a secure random source, bind them to the session, rotate on login, and never trust a value the client can set.',
+        visual: {
+          kind: 'bullets',
+          heading: 'Remember',
+          items: [
+            'Use a CSPRNG for every token.',
+            'Bind to session; rotate on login.',
+            'Serve secrets only in the page, not in cookies.',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: 'method-override',
+    title: 'Method override and content-type confusion',
+    subtitle: 'When the framework reopens the door.',
+    category: 'Bypasses',
+    level: 'advanced',
+    accent: 'danger',
+    summary:
+      'Many frameworks let a GET or a form-encoded request behave like a PUT or a JSON call. Attackers abuse these conveniences to reach endpoints that thought they were protected.',
+    keyPoints: [
+      'Method override headers turn safe verbs into unsafe ones.',
+      'Content-type negotiation can accept form-encoded input.',
+      'Every path that reaches a state change needs the same check.',
+    ],
+    scenes: [
+      {
+        id: 's1',
+        title: 'Convenience is a risk',
+        duration: 10,
+        caption: 'Frameworks add conveniences: overrides, aliases, fallbacks. Each one is a new way to reach your code.',
+        visual: {
+          kind: 'title',
+          badge: 'Bypasses',
+          title: 'Method override and content-type confusion',
+          subtitle: 'Conveniences that reopen doors.',
+        },
+      },
+      {
+        id: 's2',
+        title: 'Method override',
+        duration: 13,
+        caption: 'The X-HTTP-Method-Override header lets a client send POST but have the server treat it as PUT or DELETE.',
+        visual: {
+          kind: 'code',
+          title: 'override',
+          lang: 'http',
+          code: 'POST /api/users/42 HTTP/1.1\nX-HTTP-Method-Override: DELETE\n\n// server treats this as a DELETE',
+        },
+      },
+      {
+        id: 's3',
+        title: 'The gate mismatch',
+        duration: 13,
+        caption: 'If CSRF checks run only for DELETE and not for POST, an attacker sends a POST with the override and slips through.',
+        visual: {
+          kind: 'flow',
+          nodes: [ATTACKER, BROWSER, TARGET],
+          packets: [
+            { from: 'attacker', to: 'browser', label: 'POST + override', at: 0.2, tone: 'forged' },
+            { from: 'browser', to: 'target', label: 'treated as DELETE', at: 0.6, tone: 'cookie' },
+            { from: 'target', to: 'browser', label: 'CSRF check skipped', at: 0.85, tone: 'blocked' },
+          ],
+          note: 'The check and the action disagreed on the verb.',
+        },
+      },
+      {
+        id: 's4',
+        title: 'Content-type confusion',
+        duration: 13,
+        caption: 'Some endpoints parse form-encoded data even though they expect JSON. A plain cross-site form suddenly reaches them.',
+        visual: {
+          kind: 'code',
+          title: 'unexpected input',
+          lang: 'http',
+          code: 'POST /api/email HTTP/1.1\nContent-Type: application/x-www-form-urlencoded\n\nemail=attacker@evil.example\n\n→ parsed as JSON anyway',
+        },
+      },
+      {
+        id: 's5',
+        title: 'The GET fallback',
+        duration: 12,
+        caption: 'A few frameworks accept a query parameter like _method=PUT, letting a GET trigger an update. Now an image tag is enough again.',
+        visual: {
+          kind: 'code',
+          title: 'GET becomes PUT',
+          lang: 'html',
+          code: '<img src="https://api.example/email\n     ?_method=PUT&email=attacker@evil.example">',
+        },
+      },
+      {
+        id: 's5b',
+        title: 'Why it is sneaky',
+        duration: 12,
+        caption: 'The developer checked the main route. The override, the fallback, and the alias each reach the same code by a path nobody guarded.',
+        visual: {
+          kind: 'bullets',
+          heading: 'Many roads, one check',
+          items: [
+            'Override headers and _method params.',
+            'Form-encoded fallbacks on JSON routes.',
+            'Aliased or legacy endpoints.',
+          ],
+        },
+      },
+      {
+        id: 's6',
+        title: 'Result',
+        duration: 11,
+        caption: 'A state change happened through a route the team believed was safe, because the verb the user sent was not the verb the server ran.',
+        visual: {
+          kind: 'impact',
+          heading: 'Gate bypassed',
+          before: '“we check DELETE”',
+          after: 'a POST that became a DELETE',
+          note: 'Same action, different check.',
+        },
+      },
+      {
+        id: 's7',
+        title: 'The takeaway',
+        duration: 11,
+        caption: 'Apply CSRF protection at every entry point, and treat any request that can change state as unsafe — whatever verb it claims.',
+        visual: {
+          kind: 'bullets',
+          heading: 'Remember',
+          items: [
+            'One CSRF policy for all verbs and routes.',
+            'Reject unknown content types and overrides.',
+            'Protect the action, not the verb.',
+          ],
+        },
+      },
+    ],
+  },
+]
