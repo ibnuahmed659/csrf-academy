@@ -79,7 +79,7 @@ export const LAB_SCENARIOS: LabScenario[] = [
     category: 'SameSite',
     mode: 'exploit',
     summary:
-      'The cookie is now SameSite=Lax and the endpoint already requires POST — but nothing stops a GET. Find the vector that still works.',
+      'The cookie is now SameSite=Lax, so a cross-site POST loses it — but the endpoint still accepts GET. Find the vector that still works.',
     takeaway:
       'SameSite=Lax blocks cross-site POST, but still attaches cookies to top-level GET navigations. Allowing GET on a state-changing endpoint reopens the hole.',
     victim: {
@@ -94,7 +94,7 @@ export const LAB_SCENARIOS: LabScenario[] = [
       before: 'Recovery enabled',
       after: 'Recovery disabled',
     },
-    defense: { ...weak, sameSite: 'lax', requirePost: true },
+    defense: { ...weak, sameSite: 'lax' },
     secure: { ...hard },
     sessionToken: undefined,
     objectives: [
@@ -264,16 +264,16 @@ export const LAB_SCENARIOS: LabScenario[] = [
       before: 'Assigned to Lena',
       after: 'Assigned to attacker',
     },
-    defense: { ...weak, requirePost: true, token: 'bound', sameSite: 'lax' },
-    secure: { ...weak, requirePost: true, token: 'bound', sameSite: 'lax' },
+    defense: { ...weak, token: 'bound', sameSite: 'lax' },
+    secure: { ...weak, token: 'bound', sameSite: 'lax' },
     sessionToken: 'tk_9f31c7a4e0',
     objectives: [
       'Try to forge the request and confirm the token check stops you',
       'Explain why the attacker cannot obtain the token',
     ],
     hints: [
-      'You do not know Lena’s token — guessing it is not a strategy.',
-      'Run any vector; watch the server reject the request at the token check.',
+      'The POST form is stopped by SameSite=Lax — switch to the Link / GET navigation to actually reach the server.',
+      'You do not know Lena’s token, so the server rejects the request at the token check.',
     ],
     walkthrough: [
       {
@@ -308,12 +308,11 @@ export const LAB_SCENARIOS: LabScenario[] = [
       before: 'Password: user-chosen',
       after: 'Password: controlled by attacker',
     },
-    defense: { ...weak, requirePost: true, token: 'bound', sameSite: 'lax' },
+    defense: { ...weak, requirePost: true, token: 'bound' },
     secure: {
       ...weak,
       requirePost: true,
       token: 'bound',
-      sameSite: 'lax',
       originCheck: true,
     },
     sessionToken: 'tk_5b28d1f09c',
@@ -475,21 +474,21 @@ export const LAB_SCENARIOS: LabScenario[] = [
   },
   {
     id: 'method-override',
-    title: 'Lab-ka 2: Method Override',
+    title: 'The token that only guards POST',
     stage: 'beginner',
     category: 'Token',
     mode: 'exploit',
     summary:
-      'Token-ka waxaa lagu xaqiijiyaa POST kaliya. Markaad u beddesho GET, token-ka lama xaqiijiyo — oo email-ka waa la beddelaa.',
+      'The token is validated on POST requests only. Switch the method to GET and the check is skipped — the email still changes.',
     takeaway:
-      'Method-ku ma aha defense. Haddii token-ka lagu xaqiijiyo method-ka POST kaliya, GET wuu dhaafi karaa.',
+      'A method is not a defense. If the token is only validated when the method is POST, a GET slips past it.',
     victim: {
-      name: 'wiener',
+      name: 'Wiener',
       site: 'web-security-academy.net',
-      disclosure: 'Wuu ku soo galay lab-ka oo isla markiiba wuu joogaa gudaha.',
+      disclosure: 'Signed in to the lab in this browser.',
     },
     action: {
-      label: 'Beddel email-ka',
+      label: 'Change account email',
       path: '/my-account/change-email',
       params: { email: 'attacker@evil.com' },
       before: 'test@test.com',
@@ -499,41 +498,41 @@ export const LAB_SCENARIOS: LabScenario[] = [
     secure: { ...hard },
     sessionToken: 'WIENER_TOKEN',
     objectives: [
-      'Beddel email-ka inkastoo token-ka la xaqiijiyo',
-      'U beddel method-ka GET si token-ka loo dhaafo',
+      'Change the email even though a token is enforced',
+      'Switch the method to GET so the token check is skipped',
     ],
     hints: [
-      'Token-ka waxaa lagu xaqiijiyaa POST kaliya — tijaabi GET.',
-      'Dooro “Form → GET” oo samee request-ka.',
+      'The token is only validated on POST — try GET.',
+      'Choose “Form → GET” and run the request.',
     ],
     walkthrough: [
       {
         title: 'Method-bound token',
-        body: 'Server-ku wuxuu xaqiijiyaa token-ka kaliya marka method-ku POST yahay. GET ma qaato token, sidaas darteed attacker-ku GET ayuu isticmaalaa.',
+        body: 'The server validates the token only when the method is POST. A GET carries no token requirement, so the attacker uses GET.',
       },
       {
         title: 'Fix',
-        body: 'Xaqiiji token-ka method kasta, oo ha u oggolayn GET inuu beddelo state.',
+        body: 'Validate the token on every method, and never let GET change state.',
       },
     ],
   },
   {
     id: 'token-presence',
-    title: 'Lab-ka 3: Token Presence',
+    title: 'A token that must merely exist',
     stage: 'beginner',
     category: 'Token',
     mode: 'exploit',
     summary:
-      'CSRF token wuxuu jiraa, laakiin waxaa lagu xaqiijiyaa presence kaliya — haddii uu jiro. Markaad tirtirto token-ka, ma jiro xaqiijin.',
+      'A CSRF token exists and is checked — but only if it is present. Delete the token from the request and the check never runs.',
     takeaway:
-      'Presence ma aha validity. Haddii xaqiijinta lagu xiro “haddii uu jiro”, tirtirista token-ka ayaa dhaafi karta.',
+      'Presence is not validity. If the check is wrapped in “if it exists”, removing the token bypasses it.',
     victim: {
-      name: 'wiener',
+      name: 'Wiener',
       site: 'web-security-academy.net',
-      disclosure: 'Wuu ku soo galay lab-ka oo isla markiiba wuu joogaa gudaha.',
+      disclosure: 'Signed in to the lab in this browser.',
     },
     action: {
-      label: 'Beddel email-ka',
+      label: 'Change account email',
       path: '/my-account/change-email',
       params: { email: 'attacker@evil.com' },
       before: 'test@test.com',
@@ -542,41 +541,41 @@ export const LAB_SCENARIOS: LabScenario[] = [
     defense: { ...weak, requirePost: true, token: 'presence' },
     secure: { ...hard },
     objectives: [
-      'Beddel email-ka adigoo tirtiray token-ka',
-      'Samee exploit form-ka oo aan lahayn csrf input',
+      'Change the email by deleting the token from the request',
+      'Build the exploit form with no csrf input at all',
     ],
     hints: [
-      'Server-ku wuxuu xaqiijiyaa token-ka kaliya haddii uu jiro.',
-      'Dooro “Form → POST” oo ha gelin token (ha ka tagin faaruq).',
+      'The server validates the token only if it is present.',
+      'Choose “Form → POST” and leave the token field empty.',
     ],
     walkthrough: [
       {
         title: 'Presence-bound token',
-        body: 'Code-ku wuxuu yiraahdaa: haddii csrf uu jiro, xaqiiji. Haddii maqan yahay, xaqiijintu ma socoto. Attacker-ku token-ka wuu tirtiraa.',
+        body: 'The code says: if csrf exists, validate it. If it is missing, no check runs. The attacker simply omits the token.',
       },
       {
         title: 'Fix',
-        body: 'Waa in token-ka uu jiraa oo sax yahay — ha xirin xaqiijinta “haddii uu jiro”.',
+        body: 'The token must be present AND valid — never wrap the check in “if it exists”.',
       },
     ],
   },
   {
     id: 'token-cookie-crlf',
-    title: 'Lab-ka 5: Token Tied to Non-Session Cookie',
+    title: 'A token tied to the wrong cookie',
     stage: 'advanced',
     category: 'CRLF',
     mode: 'exploit',
     summary:
-      'csrfKey cookie lama xiriirin session cookie, oo CRLF injection ayaa u oggolaanaysa attacker-ka inuu cookie-ga ku soo dhex geliyo browser-ka victim.',
+      'The csrfKey cookie is not tied to the session, and a CRLF injection lets the attacker plant a cookie in the victim’s browser.',
     takeaway:
-      'Lab-kan wuxuu ku barayaa in laba qaybood oo ammaan ay isku dari karaan si qaldan. Qoraalku marka uu code noqdo, xuduudaha wuu jajabaa.',
+      'Two “secure” parts composed badly can cancel out. When text becomes code, headers break.',
     victim: {
-      name: 'wiener',
+      name: 'Wiener',
       site: 'web-security-academy.net',
-      disclosure: 'Wuu ku soo galay lab-ka; csrfKey waa cookie aan HttpOnly ahayn.',
+      disclosure: 'Signed in to the lab; csrfKey is a non-HttpOnly cookie.',
     },
     action: {
-      label: 'Beddel email-ka',
+      label: 'Change account email',
       path: '/my-account/change-email',
       params: { email: 'attacker@evil.com' },
       before: 'test@test.com',
@@ -585,41 +584,41 @@ export const LAB_SCENARIOS: LabScenario[] = [
     defense: { ...weak, requirePost: true, token: 'cookie', cookieInjection: 'crlf' },
     secure: { ...hard },
     objectives: [
-      'Ku soo dhex geli csrfKey cookie browser-ka victim adigoo isticmaalaya CRLF injection',
-      'Beddel email-ka isagoo isticmaalaya cookie-ga aad maamusho',
+      'Plant the csrfKey cookie in the victim’s browser using CRLF injection',
+      'Change the email using the cookie you control',
     ],
     hints: [
-      'Search endpoint-ku wuxuu dib u celiyaa input-ka — %0d%0a ayaa xuduud u noqonaysa.',
-      'Dooro “Form → POST” — cookie-ga la rakibay iyo body token-ka isku mid ka dhig.',
+      'The search endpoint reflects input — %0d%0a becomes a header boundary.',
+      'Choose “Form → POST” — make the planted cookie and the body token match.',
     ],
     walkthrough: [
       {
         title: 'Composition problem',
-        body: 'session cookie waa HttpOnly, laakiin csrfKey cookie ma aha; labaduba kala duwan. Haddii attacker-ku cookie-ga csrfKey geliyo, token-ka cookie-bound wuu jabaa.',
+        body: 'The session cookie is HttpOnly, but csrfKey is not, and the two are unrelated. If the attacker can set the csrfKey cookie, the cookie-bound token collapses.',
       },
       {
         title: 'CRLF bridge',
-        body: 'input = test%0d%0aSet-Cookie:%20csrfKey=attacker — server-ku wuxuu soo saaraa Set-Cookie labaad, sidaas darteed attacker-ku wuxuu maamulaa cookie-ga.',
+        body: 'input = test%0d%0aSet-Cookie:%20csrfKey=attacker — the server emits a second Set-Cookie, so the attacker controls the cookie.',
       },
     ],
   },
   {
     id: 'double-submit-crlf',
-    title: 'Lab-ka 6: Token Duplicated in Cookie',
+    title: 'The token duplicated in a cookie',
     stage: 'advanced',
     category: 'CRLF',
     mode: 'exploit',
     summary:
-      'Double submit: csrf cookie == csrf body. Attacker wuxuu isticmaalaa CRLF injection si uu csrf=fake ugu soo dhex geliyo browser-ka victim.',
+      'Double submit: the csrf cookie must equal the csrf body. The attacker uses CRLF injection to plant csrf=fake in the victim’s browser.',
     takeaway:
-      'Double submit wuxuu ku salaysan yahay male-awaal: “attacker-ku ma dhigi karo cookie-ga.” CRLF injection ayaa male-awaalkaas khaldan ka dhiga.',
+      'Double submit rests on an assumption: “the attacker cannot set cookies”. CRLF injection makes that assumption wrong.',
     victim: {
-      name: 'wiener',
+      name: 'Wiener',
       site: 'web-security-academy.net',
-      disclosure: 'Wuu ku soo galay lab-ka; endpoint-ku wuxuu barbardhigaa csrf cookie iyo csrf body.',
+      disclosure: 'Signed in to the lab; the endpoint compares the csrf cookie with the csrf body.',
     },
     action: {
-      label: 'Beddel email-ka',
+      label: 'Change account email',
       path: '/my-account/change-email',
       params: { email: 'attacker@evil.com' },
       before: 'test@test.com',
@@ -628,17 +627,17 @@ export const LAB_SCENARIOS: LabScenario[] = [
     defense: { ...weak, requirePost: true, token: 'cookie', cookieInjection: 'crlf' },
     secure: { ...hard },
     objectives: [
-      'Isticmaal CRLF injection si aad ugu rakibto csrf=fake cookie-ga',
-      'Dir body token-ka isla qiimaha si double submit loo dhaafo',
+      'Use CRLF injection to plant a csrf=fake cookie',
+      'Send the same value in the body so the double-submit check passes',
     ],
     hints: [
-      'Server-ku wuxuu barbardhigaa body token-ka iyo cookie token-ka.',
-      'Haddii labadaba isku mid yihiin (fake), request-ka waa la aqbalayaa.',
+      'The server compares the body token with the cookie token.',
+      'If both are the same (fake), the request is accepted.',
     ],
     walkthrough: [
       {
-        title: 'Statelessness waa trade-off',
-        body: 'Double submit wuxuu ka dhiga state steteless cookie-ga. Laakiin haddii attacker-ku cookie-ga maamuli karo (CRLF), labada dhinac wuu isku mid ka dhigi karaa.',
+        title: 'Statelessness is a trade-off',
+        body: 'Double submit makes state stateless via the cookie. But if the attacker can control the cookie (CRLF), both sides can be made equal.',
       },
       {
         title: 'Fix',
@@ -648,21 +647,21 @@ export const LAB_SCENARIOS: LabScenario[] = [
   },
   {
     id: 'referer-present',
-    title: 'Lab-ka 7: Referer Validation Depends on Header Being Present',
+    title: 'Referer validation that trusts absence',
     stage: 'advanced',
     category: 'Referer',
     mode: 'exploit',
     summary:
-      'Referer validation wuxuu ku xiran yahay jiritaanka header-ka. Haddii Referer maqan yahay, server-ku wuu aqbalayaa.',
+      'Referer validation only runs when the header is present. If Referer is missing, the server accepts the request.',
     takeaway:
-      'Referer waa optional. Haddii server-ku xaqiijiyo kaliya marka header-ku jiro, attacker-ku wuu tirtiri karaa (no-referrer).',
+      'Referer is optional. If the server validates it only when present, the attacker can simply omit it.',
     victim: {
-      name: 'wiener',
+      name: 'Wiener',
       site: 'web-security-academy.net',
-      disclosure: 'Wuu ku soo galay lab-ka oo isla markiiba wuu joogaa gudaha.',
+      disclosure: 'Signed in to the lab in this browser.',
     },
     action: {
-      label: 'Beddel email-ka',
+      label: 'Change account email',
       path: '/my-account/change-email',
       params: { email: 'attacker@evil.com' },
       before: 'test@test.com',
@@ -671,41 +670,41 @@ export const LAB_SCENARIOS: LabScenario[] = [
     defense: { ...weak, requirePost: true, refererCheck: 'if-present' },
     secure: { ...hard },
     objectives: [
-      'Tirtir Referer header-ka oo dhaafi xaqiijinta',
-      'Beddel email-ka iyadoo Referer maqan yahay',
+      'Strip the Referer header and bypass the check',
+      'Change the email with the Referer absent',
     ],
     hints: [
-      'Maqnaanshaha Referer waa possible — isticmaal <meta name="referrer" content="no-referrer">.',
-      'Dooro “Form → POST” oo samee request-ka.',
+      'A missing Referer is possible — use <meta name="referrer" content="no-referrer">.',
+      'Choose “Form → POST” and run the request.',
     ],
     walkthrough: [
       {
-        title: 'Referer waa context',
-        body: 'Browser-ku wuxuu si toos ah u diraa Referer, laakiin attacker-ku wuu tirtiri karaa. Haddii server-ku aanu xaqiijin maqnaanshaha, wuu dhaafi karaa.',
+        title: 'Referer is context',
+        body: 'The browser sends Referer automatically, but the attacker can strip it. If the server does not validate absence, the request sails through.',
       },
       {
         title: 'Fix',
-        body: 'Waa in la diido request-ka aan Referer lahayn, ama la isticmaalo Origin si sax ah.',
+        body: 'Reject requests with no Referer (or empty Origin), or validate Origin properly.',
       },
     ],
   },
   {
     id: 'referer-substring',
-    title: 'Lab-ka 8: Broken Referer Validation',
+    title: 'A Referer check that only looks for a substring',
     stage: 'advanced',
     category: 'Referer',
     mode: 'exploit',
     summary:
-      'Referer validation wuxuu isticmaalaa substring match. Wuxuu aqbalayaa Referer: https://evil.com/?target.com.',
+      'Referer validation uses a substring match. It accepts Referer: https://evil.example/?web-security-academy.net.',
     takeaway:
-      'Contains waa inclusion, Equals waa identity. Marka aad xaqiijinayso identity, isticmaal Equals — ma aha Contains.',
+      'Contains is inclusion; equals is identity. When you validate identity, compare for equality — never containment.',
     victim: {
-      name: 'wiener',
+      name: 'Wiener',
       site: 'web-security-academy.net',
-      disclosure: 'Wuu ku soo galay lab-ka oo isla markiiba wuu joogaa gudaha.',
+      disclosure: 'Signed in to the lab in this browser.',
     },
     action: {
-      label: 'Beddel email-ka',
+      label: 'Change account email',
       path: '/my-account/change-email',
       params: { email: 'attacker@evil.com' },
       before: 'test@test.com',
@@ -714,41 +713,41 @@ export const LAB_SCENARIOS: LabScenario[] = [
     defense: { ...weak, requirePost: true, refererCheck: 'contains' },
     secure: { ...hard },
     objectives: [
-      'Samee Referer oo ay ku jirto target.com laakiin meel kasta oo kale',
-      'Beddel email-ka iyadoo xaqiijinta substring la dhaafo',
+      'Make a Referer that contains the target domain but points anywhere',
+      'Change the email by defeating the substring check',
     ],
     hints: [
-      'Substring wuxuu aqbalayaa https://evil.com/?target.com.',
-      'Isticmaal history.pushState("", "", "/?target.com") oo dir POST-ka.',
+      'A substring match accepts https://evil.example/?web-security-academy.net.',
+      'Use history.pushState("", "", "/?web-security-academy.net") and send the POST.',
     ],
     walkthrough: [
       {
-        title: 'Contains vs Equals',
-        body: 'target.com wuxuu ku jiri karaa host, query, fragment, subdomain, ama path. Substring keliya wuu qabtaa — maahan identity.',
+        title: 'Contains vs equals',
+        body: 'The domain can appear in the host, query, fragment, subdomain, or path. A substring test catches none of that — only equality does.',
       },
       {
         title: 'Fix',
-        body: 'Xaqiiji in Origin/Referer uu si buuxda ula mid yahay domain-kaaga.',
+        body: 'Validate that Origin/Referer fully equals your domain.',
       },
     ],
   },
   {
     id: 'samesite-lax-override',
-    title: 'Lab-ka 9: SameSite Lax via Method Override',
+    title: 'SameSite=Lax via method override',
     stage: 'professional',
     category: 'SameSite',
     mode: 'exploit',
     summary:
-      'SameSite=Lax wuxuu dirayaa cookie-ga GET top-level navigation. Server-ku wuxuu aqbalayaa _method=POST — marka GET noqdaa POST.',
+      'SameSite=Lax sends the cookie on top-level GET navigations. The server honours _method=POST — so a GET becomes a POST.',
     takeaway:
-      'SameSite=Lax wuxuu aaminsan yahay top-level navigation, laakiin navigation wuxuu noqon karaa attacker-controlled. Method override wuxuu buuxiya shuruudaha POST-ka.',
+      'SameSite=Lax trusts top-level navigation, but navigation can be attacker-controlled. Method override fills in the POST requirement.',
     victim: {
-      name: 'wiener',
+      name: 'Wiener',
       site: 'web-security-academy.net',
-      disclosure: 'Wuu ku soo galay lab-ka; cookie-ga waa SameSite=Lax.',
+      disclosure: 'Signed in to the lab; the cookie is SameSite=Lax.',
     },
     action: {
-      label: 'Beddel email-ka',
+      label: 'Change account email',
       path: '/my-account/change-email',
       params: { email: 'attacker@evil.com', _method: 'POST' },
       before: 'test@test.com',
@@ -757,41 +756,41 @@ export const LAB_SCENARIOS: LabScenario[] = [
     defense: { ...weak, requirePost: true, sameSite: 'lax', methodOverride: true },
     secure: { ...hard },
     objectives: [
-      'Isticmaal GET top-level navigation si cookie-ga Lax loo diro',
-      'Ku dar _method=POST si endpoint-ku u aqbalo',
+      'Use a top-level GET navigation so the Lax cookie is sent',
+      'Add _method=POST so the endpoint accepts it',
     ],
     hints: [
-      'POST-ku ma qaato cookie-ga Lax — laakiin GET top-level navigation wuu qaataa.',
-      'Ku dar &_method=POST query string-ka oo isticmaal “Link / redirect”.',
+      'A Lax cookie is not sent on cross-site POST — but it is on a top-level GET navigation.',
+      'Add &_method=POST to the query string and use “Link / redirect”.',
     ],
     walkthrough: [
       {
-        title: 'Gap-ka',
-        body: 'SameSite=Lax wuxuu u arkaa GET; server-ku wuxuu u arkaa POST. Labaduba kala duwan — waa gap attacker-ku ka faa’iidaysto.',
+        title: 'The gap',
+        body: 'SameSite=Lax sees a GET; the server sees a POST. The two disagree — and that gap is what the attacker exploits.',
       },
       {
         title: 'Fix',
-        body: 'Ha u oggolayn method override kasta inuu beddelo state; isticmaal SameSite=Strict iyo token.',
+        body: 'Never let a method override change state; use SameSite=Strict and a token.',
       },
     ],
   },
   {
     id: 'samesite-strict-redirect',
-    title: 'Lab-ka 10: SameSite Strict via Client-Side Redirect',
+    title: 'SameSite=Strict via a client-side redirect',
     stage: 'professional',
     category: 'SameSite',
     mode: 'exploit',
     summary:
-      'SameSite=Strict wuxuu diidayaa cookie-ga cross-site. Laakiin site-ku wuxuu leeyahay client-side redirect gadget oo sameeya request labaad oo same-site ah.',
+      'SameSite=Strict withholds the cookie from every cross-site request. But the site has a client-side redirect gadget that fires a second, same-site request.',
     takeaway:
-      'SameSite=Strict ma ilaalin haddii site-ku leeyahay gadget. Request 1 waa bridge (same-site), request 2 waa action.',
+      'SameSite=Strict fails when the site itself has a gadget. Request 1 is the bridge (same-site), request 2 is the action.',
     victim: {
-      name: 'wiener',
+      name: 'Wiener',
       site: 'web-security-academy.net',
-      disclosure: 'Wuu ku soo galay lab-ka; cookie-ga waa SameSite=Strict.',
+      disclosure: 'Signed in to the lab; the cookie is SameSite=Strict.',
     },
     action: {
-      label: 'Beddel email-ka',
+      label: 'Change account email',
       path: '/my-account/change-email',
       params: { email: 'attacker@evil.com' },
       before: 'test@test.com',
@@ -800,41 +799,41 @@ export const LAB_SCENARIOS: LabScenario[] = [
     defense: { ...weak, sameSite: 'strict', clientRedirect: true },
     secure: { ...hard },
     objectives: [
-      'Hel gadget-ka client-side redirect ee site-ka',
-      'Isku xir bridge (request 1) iyo action (request 2)',
+      'Find the client-side redirect gadget on the site',
+      'Chain the bridge (request 1) into the action (request 2)',
     ],
     hints: [
-      'Gadget-ka wuxuu qaataa GET cross-site oo si client-side ah u leexda same-site.',
-      'Dooro “Link / redirect” oo samee request-ka.',
+      'The gadget takes a cross-site GET and redirects it client-side to a same-site URL.',
+      'Choose “Link / redirect” and run the request.',
     ],
     walkthrough: [
       {
         title: 'Client-side redirect',
-        body: 'Request 1 waa cross-site GET (ma u baahna cookie). Gadget-ku wuxuu browser-ka u leexdaa same-site URL, markaas cookie-ga Strict waa la diraa.',
+        body: 'Request 1 is a cross-site GET (no cookie needed). The gadget bounces the browser to a same-site URL, and the Strict cookie is sent.',
       },
       {
         title: 'Fix',
-        body: 'Defense-in-depth: token, Origin validation, iyo foojarin bogan kasta oo gadget u noqon kara.',
+        body: 'Defense in depth: token, Origin validation, and input-hardening on every page that could act as a gadget.',
       },
     ],
   },
   {
     id: 'samesite-strict-sibling',
-    title: 'Lab-ka 11: SameSite Strict via Sibling Domain CSWSH',
+    title: 'SameSite=Strict via a sibling-domain CSWSH',
     stage: 'professional',
     category: 'WebSocket',
     mode: 'exploit',
     summary:
-      'SameSite=Strict wuxuu diidayaa cross-site. Laakiin sibling domain wuxuu leeyahay XSS, oo attacker-ku wuxuu sameeyaa same-site request (CSWSH).',
+      'SameSite=Strict withholds the cookie from cross-site requests. But a sibling domain has XSS, so the attacker makes a same-site request (CSWSH).',
     takeaway:
-      '“Site” wuxuu ka weyn yahay “origin”. Sibling domain waa isla site — XSS on sibling wuxuu dhaafi karaa SameSite=Strict.',
+      '“Site” is bigger than “origin”. A sibling domain is the same site — XSS there bypasses SameSite=Strict.',
     victim: {
-      name: 'wiener',
+      name: 'Wiener',
       site: 'web-security-academy.net',
-      disclosure: 'Wuu ku soo galay lab-ka; cookie-ga waa SameSite=Strict.',
+      disclosure: 'Signed in to the lab; the cookie is SameSite=Strict.',
     },
     action: {
-      label: 'Beddel email-ka',
+      label: 'Change account email',
       path: '/my-account/change-email',
       params: { email: 'attacker@evil.com' },
       before: 'test@test.com',
@@ -843,41 +842,41 @@ export const LAB_SCENARIOS: LabScenario[] = [
     defense: { ...weak, requirePost: true, sameSite: 'strict', siblingXss: true },
     secure: { ...hard },
     objectives: [
-      'Hel XSS ku jirta sibling domain (cms-...)',
-      'Samee same-site request oo dhaafi SameSite=Strict',
+      'Find the XSS on the sibling domain (cms-...)',
+      'Make a same-site request that bypasses SameSite=Strict',
     ],
     hints: [
-      'Sibling domain (cms.example.com) wuxuu wadaagaa isla site-ka.',
-      'XSS on sibling wuxuu u oggolaanayaa attacker-ka same-site requests.',
+      'The sibling domain (cms.example.com) shares the same site.',
+      'XSS on the sibling lets the attacker issue same-site requests.',
     ],
     walkthrough: [
       {
-        title: 'Site vs Origin',
-        body: 'Strict wuxuu ku salaysan yahay site. Sibling domain waa isla site laakiin origin kala duwan — sidaas darteed XSS halkaas wuxuu dhaafi karaa Strict.',
+        title: 'Site vs origin',
+        body: 'Strict is based on site. A sibling domain is the same site but a different origin — so XSS there bypasses Strict.',
       },
       {
         title: 'CSWSH',
-        body: 'WebSocket handshake ma leh CSRF token. Haddii attacker-ku same-site request sameeyo, cookie-ga waa la diraa oo chat history-ga waa la xadaa.',
+        body: 'The WebSocket handshake carries no CSRF token. A same-site request sends the cookie, and the chat history is stolen.',
       },
     ],
   },
   {
     id: 'samesite-lax-refresh',
-    title: 'Lab-ka 12: SameSite Lax via Cookie Refresh',
+    title: 'SameSite=Lax via a cookie refresh',
     stage: 'professional',
     category: 'SameSite',
     mode: 'exploit',
     summary:
-      'SameSite=Lax wuxuu leeyahay 2-minute window — haddii cookie la cusboonaysiiyo, wuxuu u dhaqmaa sida None.',
+      'SameSite=Lax has a 2-minute window — a freshly re-issued cookie behaves like None.',
     takeaway:
-      'Cookie refresh wuxuu furaa window-ka Lax. Attacker-ku wuxuu cusboonaysiin karaa cookie-ga kadibna wuxuu diraa POST.',
+      'A cookie refresh opens the Lax window. The attacker refreshes the cookie, then sends the POST.',
     victim: {
-      name: 'wiener',
+      name: 'Wiener',
       site: 'web-security-academy.net',
-      disclosure: 'Wuu ku soo galay lab-ka; cookie-ga waa SameSite=Lax.',
+      disclosure: 'Signed in to the lab; the cookie is SameSite=Lax.',
     },
     action: {
-      label: 'Beddel email-ka',
+      label: 'Change account email',
       path: '/my-account/change-email',
       params: { email: 'attacker@evil.com' },
       before: 'test@test.com',
@@ -886,21 +885,21 @@ export const LAB_SCENARIOS: LabScenario[] = [
     defense: { ...weak, requirePost: true, sameSite: 'lax', cookieInjection: 'refresh' },
     secure: { ...hard },
     objectives: [
-      'Furi target.com (bog cusub) si cookie-ga loo cusboonaysiiyo',
-      'Dir POST-ka inta window-ka furan yahay',
+      'Open the target site in a new tab so the cookie is re-issued',
+      'Send the POST while the window is open',
     ],
     hints: [
-      'Furi page top-level (window.open) si cookie-ga Lax dib loo soo saaro.',
-      'Sug 1 ilbiriqsi kadib dir POST-ka (form).',
+      'Open the page top-level (window.open) so the Lax cookie is re-issued.',
+      'Wait a moment, then send the POST (form).',
     ],
     walkthrough: [
       {
-        title: 'Window-ka',
-        body: 'Cookie la cusboonaysiiyay wuxuu 2 ilbiriqsi gudaha u dhaqmaa sida None — sidaas darteed cross-site POST wuu qaataa cookie-ga.',
+        title: 'The window',
+        body: 'A freshly re-issued cookie behaves like None for 2 seconds — so a cross-site POST carries it.',
       },
       {
         title: 'Fix',
-        body: 'SameSite=Strict iyo session-bound token ayaa xidha window-kan.',
+        body: 'SameSite=Strict and a session-bound token close this window.',
       },
     ],
   },

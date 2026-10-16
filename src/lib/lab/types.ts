@@ -83,7 +83,7 @@ export const VECTORS: Record<Vector, VectorSpec> = {
     carriesBody: false,
     blurb: 'An auto-submitting form runs a top-level GET navigation.',
     snippet: (url, params) =>
-      `<form action="${url}" method="GET">\n  <input name="email" value="${params.email}">\n</form>\n<script>document.forms[0].submit()</script>`,
+      `<form action="${url}" method="GET">\n${hiddenInputs(params)}</form>\n<script>document.forms[0].submit()</script>`,
   },
   'form-post': {
     id: 'form-post',
@@ -94,7 +94,7 @@ export const VECTORS: Record<Vector, VectorSpec> = {
     carriesBody: true,
     blurb: 'The classic: a hidden form auto-submits a cross-site POST.',
     snippet: (url, params) =>
-      `<form action="${url}" method="POST">\n  <input name="email" value="${params.email}">\n</form>\n<script>document.forms[0].submit()</script>`,
+      `<form action="${url}" method="POST">\n${hiddenInputs(params)}</form>\n<script>document.forms[0].submit()</script>`,
   },
   link: {
     id: 'link',
@@ -132,6 +132,12 @@ export const VECTORS: Record<Vector, VectorSpec> = {
 function withQuery(url: string, params: Record<string, string>) {
   const q = new URLSearchParams(params).toString()
   return q ? `${url}?${q}` : url
+}
+
+function hiddenInputs(params: Record<string, string>) {
+  return Object.entries(params)
+    .map(([k, v]) => `  <input type="hidden" name="${k}" value="${v}">`)
+    .join('\n')
 }
 
 export type TraceStatus = 'ok' | 'block' | 'info' | 'warn'

@@ -2,7 +2,7 @@ import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { LAB_BY_ID, LAB_SCENARIOS, STAGE_LABEL } from '@/lib/lab'
 import { useProgress } from '@/lib/progress'
-import { LabWorkspace } from '@/components/lab/LabWorkspace'
+import { InteractiveLab } from '@/components/lab/InteractiveLab'
 import { Badge } from '@/components/ui/Badge'
 import { buttonVariants } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
@@ -47,7 +47,7 @@ export default function Lab() {
         <p className="mt-2 text-muted">{scenario.summary}</p>
       </header>
 
-      <LabWorkspace key={scenario.id} scenario={scenario} />
+      <InteractiveLab key={scenario.id} scenario={scenario} />
 
       <div className="mt-10 flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
         <Link

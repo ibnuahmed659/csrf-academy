@@ -203,7 +203,7 @@ export function runCsrf(
         'warn',
       ),
     )
-  } else if (defense.tokenMethodBound && effectiveMethod === 'GET') {
+  } else if (defense.tokenMethodBound && spec.method === 'GET') {
     trace.push(
       step(
         'Server',
