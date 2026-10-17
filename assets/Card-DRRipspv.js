@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-1Aph62Vy.js";import{u as t}from"./index-Ck66bNKi.js";var n=e();function r({className:e,...r}){return(0,n.jsx)(`div`,{className:t(`rounded-xl border border-line bg-surface shadow-card`,e),...r})}export{r as t};

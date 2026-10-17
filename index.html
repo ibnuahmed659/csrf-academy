@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/csrf-academy/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0f19" />
+    <title>CSRF Forge — Master Cross-Site Request Forgery</title>
+    <meta
+      name="description"
+      content="CSRF Forge is a hands-on academy for Cross-Site Request Forgery: animated video tutorials, live attack labs, and a defensive playground. Learn how forged requests really work — safely, in your browser."
+    />
+    <meta property="og:title" content="CSRF Forge — Master Cross-Site Request Forgery" />
+    <meta
+      property="og:description"
+      content="Animated video tutorials, live CSRF attack labs, and a defensive playground. Understand the attack, then break it."
+    />
+    <meta property="og:type" content="website" />
+    <script>
+      // Apply theme before first paint to avoid a flash.
+      (function () {
+        try {
+          var t = localStorage.getItem('csrf-theme')
+          if (t !== 'light' && t !== 'dark') t = 'dark'
+          document.documentElement.dataset.theme = t
+          if (t === 'dark') document.documentElement.classList.add('dark')
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark'
+          document.documentElement.classList.add('dark')
+        }
+      })()
+    </script>
+    <script type="module" crossorigin src="/csrf-academy/assets/index-Ck66bNKi.js"></script>
+    <link rel="modulepreload" crossorigin href="/csrf-academy/assets/jsx-runtime-1Aph62Vy.js">
+    <link rel="stylesheet" crossorigin href="/csrf-academy/assets/index-BBh4PUvv.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
