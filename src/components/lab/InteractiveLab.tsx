@@ -46,14 +46,24 @@ const SESSION_COOKIE = 'eyJ1IjoiYW1pbmEifQ.9f31c7a4e0a2b8d3c5e7'
 type StepId = 'brief' | 'recon' | 'craft' | 'fire' | 'impact' | 'defend' | 'recap'
 
 const STEPS: { id: StepId; label: string; icon: typeof Target }[] = [
-  { id: 'brief', label: 'Briefing', icon: Target },
-  { id: 'recon', label: 'Recon', icon: Eye },
-  { id: 'craft', label: 'Craft lure', icon: Bug },
-  { id: 'fire', label: 'Fire', icon: Send },
-  { id: 'impact', label: 'Impact', icon: ShieldAlert },
-  { id: 'defend', label: 'Defend', icon: ShieldCheck },
-  { id: 'recap', label: 'Recap', icon: Lightbulb },
+  { id: 'brief', label: 'Hordhac', icon: Target },
+  { id: 'recon', label: 'Sahmin', icon: Eye },
+  { id: 'craft', label: 'Diyaari dabinka', icon: Bug },
+  { id: 'fire', label: 'Fuli', icon: Send },
+  { id: 'impact', label: 'Saamaynta', icon: ShieldAlert },
+  { id: 'defend', label: 'Difaac', icon: ShieldCheck },
+  { id: 'recap', label: 'Soo koobid', icon: Lightbulb },
 ]
+
+const BLOCKED_LABEL: Record<string, string> = {
+  'POST-only endpoint': 'endpoint-ka POST-ka oo keliya',
+  'Required custom header': 'custom header loo baahnayd',
+  'Origin check': 'hubinta Origin',
+  'Referer check': 'hubinta Referer',
+  'Missing CSRF token': 'CSRF token maqan',
+  'Cookie-bound CSRF token': 'CSRF token cookie-ga ku xidhan',
+  'Session-bound CSRF token': 'CSRF token-ka session-ka ku xidhan',
+}
 
 export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
   const { markLabSolved } = useProgress()
@@ -208,15 +218,15 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
   const restore = () => {
     setState(scenario.action.before)
     setLastResult(null)
-    flash('Account restored.')
+    flash('Akoonka waa la soo celiyay.')
   }
 
   const setDef = <K extends keyof Defense>(key: K, value: Defense[K]) => setDefense((d) => ({ ...d, [key]: value }))
 
   const current = STEPS[step].id
   const bookmarks = [
-    { label: `Account · ${scenario.victim.site}`, url: ACCOUNT_URL },
-    { label: 'Lure · evil.example', url: ATTACKER_PAGE },
+    { label: `Akoonka · ${scenario.victim.site}`, url: ACCOUNT_URL },
+    { label: 'Dabin · evil.example', url: ATTACKER_PAGE },
   ]
 
   return (
@@ -227,31 +237,31 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
         {/* ---------------- Briefing ---------------- */}
         {current === 'brief' && (
           <Card className="p-6">
-            <StepHeader kicker="Mission brief" title={scenario.title}>
-              {scenario.summary} You are the attacker: operate the tools below to make{' '}
-              {scenario.victim.name}’s browser perform <em>{scenario.action.label.toLowerCase()}</em> against
-              their own account.
+            <StepHeader kicker="Warbixinta howsha" title={scenario.title}>
+              {scenario.summary} Waxaad tahay weeraryahanka: isticmaal qalabka hoose si aad browser-ka{' '}
+              {scenario.victim.name} uga dhigto inuu ku fuliyo <em>{scenario.action.label.toLowerCase()}</em>{' '}
+              account-kiisa gaarka ah.
             </StepHeader>
 
             <div className="mt-6 grid gap-4 md:grid-cols-3">
-              <InfoTile icon={<Cookie className="size-4" />} title="The trust">
-                Every request {scenario.victim.name}’s browser sends carries their{' '}
-                <span className="font-mono">session</span> cookie automatically. The server treats “has a
-                valid cookie” as “this is {scenario.victim.name}”.
+              <InfoTile icon={<Cookie className="size-4" />} title="Kalsoonida">
+                Codsi kasta oo browser-ka {scenario.victim.name} diro ayaa si otomaatig ah ula socda
+                cookie-ga <span className="font-mono">session</span>. Server-ku wuxuu “cookie sax ah”
+                u arkaa “kani waa {scenario.victim.name}”.
               </InfoTile>
-              <InfoTile icon={<Bug className="size-4" />} title="The gap">
-                The <span className="font-mono">{scenario.action.path}</span> endpoint has no extra proof
-                that {scenario.victim.name} meant to send it.
+              <InfoTile icon={<Bug className="size-4" />} title="Jabka">
+                Endpoint-ka <span className="font-mono">{scenario.action.path}</span> ma hayo caddayn
+                dheeraad ah oo muujinaya in {scenario.victim.name} uu ula jeeday inuu diro.
               </InfoTile>
-              <InfoTile icon={<Target className="size-4" />} title="Your goal">
-                Make the account read <span className="font-mono text-danger">{scenario.action.after}</span>
-                .
+              <InfoTile icon={<Target className="size-4" />} title="Hadafkaaga">
+                Ka dhig account-ka inuu muujiyo{' '}
+                <span className="font-mono text-danger">{scenario.action.after}</span>.
               </InfoTile>
             </div>
 
             <div className="mt-6 flex items-center gap-3">
               <Button variant="forge" onClick={() => goto(1)}>
-                Start — recon the request <ArrowRight className="size-4" />
+                Bilow — sahmi codsiga <ArrowRight className="size-4" />
               </Button>
             </div>
           </Card>
@@ -260,18 +270,18 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
         {/* ---------------- Recon ---------------- */}
         {current === 'recon' && (
           <Card className="p-6">
-            <StepHeader kicker="Step 1 — reconnaissance" title="Watch a real request hit the proxy">
-              {scenario.victim.name} is signed in to{' '}
-              <span className="font-mono">{scenario.victim.site}</span>. The browser has already loaded
-              their account page — the proxy captured the request. Use the address bar, bookmarks, and
-              back button to browse; inspect what the browser sends.
+            <StepHeader kicker="Tallaabo 1 — sahmin" title="Daawasho codsi dhab ah oo proxy-ga gaara">
+              {scenario.victim.name} wuxuu soo galay{' '}
+              <span className="font-mono">{scenario.victim.site}</span>. Browser-ku horey ayuu u soo raray
+              boggii account-ka — proxy-gu wuxuu qabtay codsiga. Isticmaal bar-ka cinwaanka, bookmarks-ka,
+              iyo badhanka noqoshada si aad u baarto; fiirso waxa browser-ku diro.
             </StepHeader>
 
             <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
               <BrowserChrome
                 kind="victim"
                 url={victimUrl}
-                tabTitle={`Account · ${scenario.victim.site}`}
+                tabTitle={`Akoonka · ${scenario.victim.site}`}
                 onNavigate={(u) => navigate(u, { forge: false })}
                 onBack={goBack}
                 canGoBack={navStack.length > 0}
@@ -281,21 +291,21 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
                 <VictimApp scenario={scenario} state={state} toast={toast} />
               </BrowserChrome>
 
-              <ProxyPanel exchanges={history} selectedId={selectedId} onSelect={setSelectedId} title="HTTP history" />
+              <ProxyPanel exchanges={history} selectedId={selectedId} onSelect={setSelectedId} title="Taariikhda HTTP" />
             </div>
 
             <div className="mt-5 flex items-start gap-3 rounded-lg border border-brand/30 bg-brand-soft p-4">
               <Info className="mt-0.5 size-4 shrink-0 text-brand" />
               <p className="text-sm leading-relaxed text-muted">
-                The only thing identifying the user is the <span className="font-mono">Cookie</span> header.
-                Check the <span className="font-semibold text-ink">Findings</span> tab to see which defenses
-                are missing on the state-changing endpoint.
+                Waxa kaliya ee aqoonsanaya isticmaalaha waa header-ka <span className="font-mono">Cookie</span>.
+                Fiiri tab-ka <span className="font-semibold text-ink">Aragtiyo</span> si aad u aragto difaacyada
+                endpoint-ka beddelaya xaaladda ka maqan.
               </p>
             </div>
 
             <div className="mt-5 flex items-center gap-3">
               <Button variant="forge" onClick={() => goto(2)}>
-                Craft the lure <ArrowRight className="size-4" />
+                Diyaari dabinka <ArrowRight className="size-4" />
               </Button>
             </div>
           </Card>
@@ -304,26 +314,26 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
         {/* ---------------- Craft lure ---------------- */}
         {current === 'craft' && (
           <Card className="p-6">
-            <StepHeader kicker="Step 2 — craft the lure" title={`Build a page on ${ATTACKER_ORIGIN}`}>
-              Choose how the forged request is triggered. It targets{' '}
+            <StepHeader kicker="Tallaabo 2 — diyaari dabinka" title={`Samee bog ku yaal ${ATTACKER_ORIGIN}`}>
+              Dooro sida request-ka been-abuurka ah loo kiciyo. Wuxuu bartilmaameedsadaa{' '}
               <span className="font-mono">
                 {scenario.action.label} → {scenario.action.path}
               </span>
-              . Deploy it, then open it in {scenario.victim.name}’s browser.
+              . Dhaji, dabadeed ku fur browser-ka {scenario.victim.name}.
             </StepHeader>
 
             <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
               <PayloadPanel scenario={scenario} payload={payload} setPayload={setPayload} />
 
               <div className="flex min-w-0 flex-col gap-3">
-                <BrowserChrome kind="attacker" url={ATTACKER_PAGE} tabTitle="You’ve won an iPhone!" trusted={false}>
+                <BrowserChrome kind="attacker" url={ATTACKER_PAGE} tabTitle="Waxaad ku guuleysatay iPhone!" trusted={false}>
                   <AttackerLure />
                 </BrowserChrome>
-                <Collapse title="Why the browser allows this" icon={<Info className="size-4" />}>
-                  A page may always <span className="font-medium text-ink">send</span> a request to any
-                  other site. It cannot <span className="font-medium text-ink">read</span> the response
-                  (CORS), but the request still goes out — and carries cookies per the cookie’s{' '}
-                  <span className="font-mono">SameSite</span> attribute.
+                <Collapse title="Sababta browser-ku u oggolaado tan" icon={<Info className="size-4" />}>
+                  Boggu had iyo jeer wuu <span className="font-medium text-ink">diri</span> karaa codsi goob
+                  kale. Ma <span className="font-medium text-ink">akhrin</span> karo jawaabta (CORS),
+                  laakiin codsigu weli wuu baxaa — wuxuuna sidoo cookies-ka sida ku cad sifada{' '}
+                  <span className="font-mono">SameSite</span>.
                 </Collapse>
               </div>
             </div>
@@ -334,14 +344,14 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <Button variant="secondary" onClick={() => setDeployed(true)}>
-                <Wrench className="size-4" /> Deploy to evil.example
+                <Wrench className="size-4" /> Ku dhaji evil.example
               </Button>
               <Button variant="forge" onClick={sendLure} disabled={!deployed}>
-                <Send className="size-4" /> Open it in {scenario.victim.name}’s browser
+                <Send className="size-4" /> Ku fur browser-ka {scenario.victim.name}
               </Button>
               {deployed && (
                 <span className="inline-flex items-center gap-1.5 text-[12.5px] text-success">
-                  <Check className="size-3.5" /> Deployed.
+                  <Check className="size-3.5" /> Waa la dhajiyay.
                 </span>
               )}
             </div>
@@ -351,16 +361,16 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
         {/* ---------------- Fire ---------------- */}
         {current === 'fire' && (
           <Card className="p-6">
-            <StepHeader kicker="Step 3 — execution" title={`${scenario.victim.name} opens the lure; you forward the request`}>
-              The browser auto-submits the hidden request to Vault. The proxy intercepts it — review the
-              flagged headers, then <strong>Forward</strong> it to the server.
+            <StepHeader kicker="Tallaabo 3 — fulinta" title={`${scenario.victim.name} wuxuu furaa dabinka; adigaa u gudbinaya codsiga`}>
+              Browser-ku si otomaatig ah ayuu codsi qarsoon u diraa server-ka. Proxy-gu wuu qabtaa —
+              fiirso headers-ka la calaamadeeyay, dabadeed <strong>U gudbi</strong> server-ka.
             </StepHeader>
 
             <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
               <BrowserChrome
                 kind="victim"
                 url={victimUrl}
-                tabTitle={onLure ? 'You’ve won an iPhone!' : `Account · ${scenario.victim.site}`}
+                tabTitle={onLure ? 'Waxaad ku guuleysatay iPhone!' : `Akoonka · ${scenario.victim.site}`}
                 trusted={!onLure}
                 onNavigate={(u) => navigate(u)}
                 onBack={goBack}
@@ -377,7 +387,7 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
                 onSelect={setSelectedId}
                 onForward={forwardPending}
                 onDrop={dropPending}
-                title="Intercepting proxy"
+                title="Proxy-ga dhexgeliya"
               />
             </div>
 
@@ -385,13 +395,13 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
               <div className="scene-in mt-5">
                 <TraceList result={lastResult} />
                 {lastResult.pwned ? (
-                  <Banner tone="danger" icon={<ShieldAlert className="size-5" />} title="The request succeeded">
-                    The server processed it as {scenario.victim.name} and applied the change.
+                  <Banner tone="danger" icon={<ShieldAlert className="size-5" />} title="Codsigii wuu guuleystay">
+                    Server-ku wuxuu u farsameeyay sida {scenario.victim.name} oo wuxuu dhaqan geliyay isbeddelka.
                   </Banner>
                 ) : (
-                  <Banner tone="success" icon={<ShieldCheck className="size-5" />} title="The request was rejected">
-                    Stopped by <span className="font-medium text-ink">{lastResult.blockedBy}</span>. The
-                    account is untouched.
+                  <Banner tone="success" icon={<ShieldCheck className="size-5" />} title="Codsigii waa la diiday">
+                    Waxaa joojiyay <span className="font-medium text-ink">{BLOCKED_LABEL[lastResult.blockedBy ?? ''] ?? lastResult.blockedBy}</span>. Account-ka
+                    lama taaban.
                   </Banner>
                 )}
               </div>
@@ -406,9 +416,9 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
                 }}
                 disabled={!lastResult}
               >
-                {isAssess ? 'Review the result' : 'See the impact'} <ArrowRight className="size-4" />
+                {isAssess ? 'Dib u eeg natiijada' : 'Arag saamaynta'} <ArrowRight className="size-4" />
               </Button>
-              {!lastResult && <span className="text-[12.5px] text-muted">Forward the intercepted request to continue.</span>}
+              {!lastResult && <span className="text-[12.5px] text-muted">U gudbi codsiga la qabtay si aad u sii wadato.</span>}
             </div>
           </Card>
         )}
@@ -417,19 +427,19 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
         {current === 'impact' && (
           <Card className="p-6">
             <StepHeader
-              kicker="Step 4 — impact"
-              title={isAssess ? 'The defense held' : `${scenario.victim.name}’s account, without ${scenario.victim.name}`}
+              kicker="Tallaabo 4 — saamaynta"
+              title={isAssess ? 'Difaacu wuu istaagay' : `Account-ka ${scenario.victim.name}, isagoo aan ${scenario.victim.name} joogin`}
             >
               {isAssess
-                ? 'Every vector was rejected. Confirm the state never changed and identify which defense stopped it.'
-                : 'Open the account page: the change is live in their real session — a valid action, authorized by a cookie, performed against their will.'}
+                ? 'Vector kastaa waa la diiday. Xaqiiji in xaaladdu aysan waligeed isbeddelin oo aqoonso difaaca joojiyay.'
+                : 'Fur boggii account-ka: isbeddelku wuu nool yahay session-kooda dhabta ah — fal sax ah, oo cookie u fasaxay, loona sameeyay iyagoo aan rabin.'}
             </StepHeader>
 
             <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
               <BrowserChrome
                 kind="victim"
                 url={victimUrl}
-                tabTitle={`Account · ${scenario.victim.site}`}
+                tabTitle={`Akoonka · ${scenario.victim.site}`}
                 onNavigate={(u) => navigate(u, { forge: false })}
                 onBack={goBack}
                 canGoBack={navStack.length > 0}
@@ -441,16 +451,16 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
 
               <div className="flex min-w-0 flex-col gap-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <StateBox label="Before" value={scenario.action.before} />
-                  <StateBox label="After" value={compromised ? scenario.action.after : scenario.action.before} danger={compromised} />
+                  <StateBox label="Hore" value={scenario.action.before} />
+                  <StateBox label="Kadib" value={compromised ? scenario.action.after : scenario.action.before} danger={compromised} />
                 </div>
-                <ProxyPanel exchanges={history} selectedId={selectedId} onSelect={setSelectedId} title="HTTP history" />
+                <ProxyPanel exchanges={history} selectedId={selectedId} onSelect={setSelectedId} title="Taariikhda HTTP" />
               </div>
             </div>
 
             <div className="mt-5 flex items-center gap-3">
               <Button variant="forge" onClick={() => goto(5)}>
-                {isAssess ? 'Explore the defenses' : 'Now defend it'} <ShieldCheck className="size-4" />
+                {isAssess ? 'Sahami difaacyada' : 'Hadda difaac'} <ShieldCheck className="size-4" />
               </Button>
             </div>
           </Card>
@@ -459,9 +469,10 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
         {/* ---------------- Defend ---------------- */}
         {current === 'defend' && (
           <Card className="p-6">
-            <StepHeader kicker="Step 5 — defend & retest" title="Harden the endpoint, then attack it again">
-              Flip the defenses and re-run the exact same forged request. A good fix makes the attack fail{' '}
-              <em>without</em> relying on the attacker playing nice.
+            <StepHeader kicker="Tallaabo 5 — difaac & dib-u-tijaabi" title="Adkee endpoint-ka, dabadeed mar kale weerar">
+              Beddel difaacyada oo mar kale orodsiiso isla codsigii been-abuurka ahaa. Xal wanaagsan
+              ayaa weerarka fashilmiya <em>isagoo aan</em> ku tiirsanayn in weeraryahanku si wanaagsan
+              u dhaqmo.
             </StepHeader>
 
             <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
@@ -469,7 +480,7 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
                 <BrowserChrome
                   kind="victim"
                   url={victimUrl}
-                  tabTitle={onLure ? 'You’ve won an iPhone!' : `Account · ${scenario.victim.site}`}
+                  tabTitle={onLure ? 'Waxaad ku guuleysatay iPhone!' : `Akoonka · ${scenario.victim.site}`}
                   trusted={!onLure}
                   onNavigate={(u) => navigate(u)}
                   onBack={goBack}
@@ -494,22 +505,22 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
                   onSelect={setSelectedId}
                   onForward={forwardPending}
                   onDrop={dropPending}
-                  title="Retest"
+                  title="Dib-u-tijaabi"
                   toolbar={
                     <Button variant="danger" size="sm" onClick={retest}>
-                      <Send className="size-3.5" /> Re-run the attack
+                      <Send className="size-3.5" /> Mar kale orodsi weerarka
                     </Button>
                   }
                 />
                 {lastResult && (
                   <div className="scene-in flex flex-col gap-3">
                     {lastResult.pwned ? (
-                      <Banner tone="danger" icon={<ShieldAlert className="size-5" />} title="Still vulnerable">
-                        The request landed. Turn on more defenses and try again.
+                      <Banner tone="danger" icon={<ShieldAlert className="size-5" />} title="Weli nugul">
+                        Codsigu wuu gaadhay. Daar difaacyo dheeraad ah oo mar kale isku day.
                       </Banner>
                     ) : (
-                      <Banner tone="success" icon={<ShieldCheck className="size-5" />} title="Attack blocked">
-                        Stopped by <span className="font-medium text-ink">{lastResult.blockedBy}</span>.
+                      <Banner tone="success" icon={<ShieldCheck className="size-5" />} title="Weerarka waa la xannibay">
+                        Waxaa joojiyay <span className="font-medium text-ink">{BLOCKED_LABEL[lastResult.blockedBy ?? ''] ?? lastResult.blockedBy}</span>.
                       </Banner>
                     )}
                     <TraceList result={lastResult} />
@@ -521,11 +532,11 @@ export function InteractiveLab({ scenario }: { scenario: LabScenario }) {
             {defendedOnce && (
               <div className="mt-5 flex items-center justify-between gap-4 rounded-lg border border-success/40 bg-success-soft p-4">
                 <p className="text-sm text-muted">
-                  <span className="font-semibold text-ink">Defended.</span> The forged request is now rejected
-                  before it can change anything.
+                  <span className="font-semibold text-ink">La difaacay.</span> Codsiga been-abuurka ah hadda
+                  waa la diidaa ka hor inta uusan wax beddelin.
                 </p>
                 <Button variant="success" onClick={() => goto(6)}>
-                  Recap & quiz <ArrowRight className="size-4" />
+                  Soo koobid & imtixaan <ArrowRight className="size-4" />
                 </Button>
               </div>
             )}
@@ -637,10 +648,10 @@ function VictimApp({
           <span className="grid size-8 place-items-center rounded-lg bg-accent-soft text-sm font-black text-accent">{initial}</span>
           <div>
             <p className="text-sm font-bold text-ink">{scenario.victim.site}</p>
-            <p className="text-[11px] text-faint">Account settings</p>
+            <p className="text-[11px] text-faint">Dejinta account-ka</p>
           </div>
           <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-success">
-            <span className="size-1.5 rounded-full bg-success" /> signed in
+            <span className="size-1.5 rounded-full bg-success" /> wuu soo galay
           </span>
         </div>
 
@@ -648,8 +659,8 @@ function VictimApp({
           <div className="scene-in mt-4 flex items-start gap-2.5 rounded-lg border border-danger/40 bg-danger-soft p-3">
             <ShieldAlert className="mt-0.5 size-4 shrink-0 text-danger" />
             <p className="text-[13px] text-muted">
-              <span className="font-semibold text-ink">{scenario.action.label}</span> was applied:{' '}
-              <span className="font-mono text-danger">{state}</span>. You did not do this.
+              <span className="font-semibold text-ink">{scenario.action.label}</span> waa la dhaqan geliyay:{' '}
+              <span className="font-mono text-danger">{state}</span>. Adigu tan maadan samayn.
             </p>
           </div>
         )}
@@ -663,7 +674,7 @@ function VictimApp({
           <div className="mt-3 flex items-start gap-2 rounded-lg border border-warning/40 bg-warning-soft p-3">
             <Globe className="mt-0.5 size-4 shrink-0 text-warning" />
             <p className="text-[12px] leading-relaxed text-muted">
-              Leaked in the page URL: <span className="font-mono text-ink">{scenario.sessionToken}</span>
+              Waxaa lagu daadihiyay URL-ka bogga: <span className="font-mono text-ink">{scenario.sessionToken}</span>
             </p>
           </div>
         )}
@@ -671,7 +682,7 @@ function VictimApp({
         <div className="mt-4 flex flex-wrap items-center gap-3">
           {onRestore && (
             <Button type="button" variant="ghost" size="sm" onClick={onRestore}>
-              <RotateCcw className="size-3.5" /> Restore
+              <RotateCcw className="size-3.5" /> Soo celi
             </Button>
           )}
           {toast && (
@@ -708,7 +719,7 @@ function PayloadPanel({
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <div className="rounded-xl border border-line bg-surface p-4 shadow-card">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-faint">1 · Trigger vector</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-faint">1 · Qaabka kicinta</p>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {vectors.map((v) => (
             <button
@@ -733,27 +744,27 @@ function PayloadPanel({
               <input
                 value={payload.token}
                 onChange={(e) => setPayload({ ...payload, token: e.target.value })}
-                placeholder={leaked ? String(scenario.sessionToken) : scenario.defense.token === 'unbound' ? 'type any token value' : 'csrf token'}
+                placeholder={leaked ? String(scenario.sessionToken) : scenario.defense.token === 'unbound' ? 'qor token kasta' : 'csrf token'}
                 spellCheck={false}
                 className="h-10 min-w-0 flex-1 rounded-md border border-line bg-surface px-3 font-mono text-[13px] text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-[var(--brand-ring)]"
               />
               {leaked && (
                 <Button variant="secondary" size="sm" onClick={() => setPayload({ ...payload, token: String(scenario.sessionToken) })}>
-                  <ClipboardCopy className="size-3.5" /> Paste
+                  <ClipboardCopy className="size-3.5" /> Ku dheji
                 </Button>
               )}
             </div>
             <p className="mt-1.5 text-[11.5px] text-muted">
               {leaked
-                ? 'The token leaked in the victim’s page URL — paste it into the forged request.'
+                ? 'Token-ku wuxuu ku soo daaday URL-ka bogga dhibanaha — ku dheji codsiga been-abuurka ah.'
                 : scenario.defense.token === 'unbound'
-                  ? 'The server accepts any well-formed token. Bring your own.'
-                  : 'The attacker normally cannot read the victim’s token.'}
+                  ? 'Server-ku wuxuu aqbalaa token kasta oo qaab wanaagsan. Keen kaaga.'
+                  : 'Weeraryahanku caadi ahaan ma akhrin karo token-ka dhibanaha.'}
             </p>
           </>
         )}
 
-        <p className={cn('text-[11px] font-semibold uppercase tracking-wide text-faint', showToken ? 'mt-4' : 'mt-4')}>3 · Generated page source</p>
+        <p className={cn('text-[11px] font-semibold uppercase tracking-wide text-faint', showToken ? 'mt-4' : 'mt-4')}>3 · Source-ka bogga la sameeyay</p>
       </div>
 
       <CodeBlock code={source} title="win-a-prize.html" wrap />
@@ -766,13 +777,13 @@ function AttackerLure({ submitting }: { submitting?: boolean }) {
     <div className="p-6">
       <div className="mx-auto max-w-md rounded-xl border border-line bg-surface p-6 text-center">
         <Trophy className="mx-auto size-10 text-warning" />
-        <h3 className="mt-3 text-lg font-bold text-ink">Congratulations!</h3>
-        <p className="mt-1 text-sm text-muted">You are our lucky visitor. Claim your brand-new iPhone now.</p>
+        <h3 className="mt-3 text-lg font-bold text-ink">Hambalyo!</h3>
+        <p className="mt-1 text-sm text-muted">Waxaad tahay booqashadeenna nasiibka leh. Hadda qaado iPhone-kaaga cusub.</p>
         <span className="mt-4 inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-[#ff5b2e] to-[#ffb020] px-4 py-2 text-sm font-bold text-[#170b06]">
-          <Gift className="size-4" /> Claim your prize
+          <Gift className="size-4" /> Qaado abaalmarintaada
         </span>
         {submitting && (
-          <p className="scene-in mt-3 font-mono text-[11px] text-danger">&lt;form&gt; auto-submitting hidden request…</p>
+          <p className="scene-in mt-3 font-mono text-[11px] text-danger">&lt;form&gt; si otomaatig ah u diraya codsi qarsoon…</p>
         )}
       </div>
     </div>
@@ -798,9 +809,9 @@ function Hints({ hints }: { hints: string[] }) {
     <div className="rounded-lg border border-line bg-surface-2 p-4">
       <div className="flex items-center gap-2">
         <Lightbulb className="size-4 text-warning" />
-        <p className="text-[13px] font-semibold text-ink">Nudges</p>
+        <p className="text-[13px] font-semibold text-ink">Tilmaamo</p>
         <span className="ml-auto text-[11px] text-faint">
-          {shown}/{hints.length} revealed
+          {shown}/{hints.length} la muujiyay
         </span>
       </div>
       <ul className="mt-2 flex flex-col gap-2">
@@ -819,10 +830,10 @@ function Hints({ hints }: { hints: string[] }) {
           onClick={() => setShown((s) => s + 1)}
           className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-2.5 py-1.5 text-[12px] font-medium text-muted transition hover:border-line-strong hover:text-ink"
         >
-          <Eye className="size-3.5" /> {shown === 0 ? 'Reveal a hint' : 'Reveal another hint'}
+          <Eye className="size-3.5" /> {shown === 0 ? 'Muuji tilmaan' : 'Muuji tilmaan kale'}
         </button>
       ) : (
-        <p className="mt-3 text-[12px] text-faint">That’s all the nudges — you’re on your own now.</p>
+        <p className="mt-3 text-[12px] text-faint">Taasi waa tilmaamihii oo dhan — hadda adigaa isku filan.</p>
       )}
     </div>
   )
@@ -855,24 +866,24 @@ function DefensePanel({
     <div className="rounded-xl border border-line bg-surface p-4 shadow-card">
       <div className="mb-3 flex items-center gap-2">
         <Lock className="size-4 text-brand" />
-        <h3 className="text-sm font-semibold text-ink">Defense panel</h3>
-        <span className="ml-auto text-[11px] text-faint">you are the defender</span>
+        <h3 className="text-sm font-semibold text-ink">Panel-ka difaaca</h3>
+        <span className="ml-auto text-[11px] text-faint">adigaa difaacaya</span>
       </div>
 
       <div className="flex flex-col gap-3.5">
-        <ToggleRow label="Require a session-bound CSRF token" hint="Server compares a per-session secret only the victim’s pages know." checked={defense.token === 'bound'} onChange={(v) => setDef('token', v ? 'bound' : 'none')} />
-        <ToggleRow label="Cookie: SameSite=Strict" hint="Browser refuses to attach the session cookie to any cross-site request." checked={defense.sameSite === 'strict'} onChange={(v) => setDef('sameSite', v ? 'strict' : 'none')} />
-        <ToggleRow label="Validate Origin / Referer" hint="Reject requests whose Origin is not the site’s own." checked={defense.originCheck} onChange={(v) => setDef('originCheck', v)} />
-        <ToggleRow label="POST-only endpoint" hint="Stop state changes from firing on a GET (image/link) too." checked={defense.requirePost} onChange={(v) => setDef('requirePost', v)} />
-        <ToggleRow label="Require a custom header" hint="Forces a CORS preflight a cross-site page cannot satisfy." checked={defense.customHeader} onChange={(v) => setDef('customHeader', v)} />
+        <ToggleRow label="Dalbo CSRF token session-ka ku xidhan" hint="Server-ku wuxuu isbarbardhigaa sir gaar u ah session kasta oo ay ogyihiin oo keliya bogagga dhibanaha." checked={defense.token === 'bound'} onChange={(v) => setDef('token', v ? 'bound' : 'none')} />
+        <ToggleRow label="Cookie: SameSite=Strict" hint="Browser-ku wuu diidaa inuu session cookie-ga ku daro codsi cross-site ah." checked={defense.sameSite === 'strict'} onChange={(v) => setDef('sameSite', v ? 'strict' : 'none')} />
+        <ToggleRow label="Hubi Origin / Referer" hint="Diid codsiyada Origin-koodu aan ahayn kan goobta lafteeda." checked={defense.originCheck} onChange={(v) => setDef('originCheck', v)} />
+        <ToggleRow label="Endpoint POST-ka oo keliya" hint="Jooji isbeddellada xaaladda inay ku kiciyaan GET (sawir/link) sidoo kale." checked={defense.requirePost} onChange={(v) => setDef('requirePost', v)} />
+        <ToggleRow label="Dalbo custom header" hint="Waxay qasabtaa CORS preflight oo bog cross-site ah aanu buuxin karin." checked={defense.customHeader} onChange={(v) => setDef('customHeader', v)} />
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4">
         <Button variant="secondary" size="sm" onClick={onApplySecure}>
-          <Wrench className="size-3.5" /> Apply recommended set
+          <Wrench className="size-3.5" /> Dalbo set-ka la soo jeediyay
         </Button>
         <Button variant="ghost" size="sm" onClick={onResetVuln}>
-          <RotateCcw className="size-3.5" /> Reset to vulnerable
+          <RotateCcw className="size-3.5" /> Ku celi xaaladda nugul
         </Button>
       </div>
     </div>
@@ -896,33 +907,33 @@ function ToggleRow({ label, hint, checked, onChange }: { label: string; hint: st
  * ------------------------------------------------------------------ */
 function fixesFrom(secure: Defense): string[] {
   const out: string[] = []
-  if (secure.token === 'bound') out.push('a session-bound CSRF token')
+  if (secure.token === 'bound') out.push('CSRF token session-ka ku xidhan')
   if (secure.sameSite === 'strict') out.push('SameSite=Strict')
-  if (secure.originCheck) out.push('Origin/Referer validation')
-  if (secure.requirePost) out.push('a POST-only endpoint')
-  if (secure.customHeader) out.push('a required custom header')
-  if (secure.refererCheck === 'exact') out.push('a strict Referer check')
-  if (!secure.methodOverride) out.push('no method-override confusion')
+  if (secure.originCheck) out.push('xaqiijinta Origin/Referer')
+  if (secure.requirePost) out.push('endpoint POST-ka oo keliya')
+  if (secure.customHeader) out.push('custom header loo baahan yahay')
+  if (secure.refererCheck === 'exact') out.push('hubin Referer adag')
+  if (!secure.methodOverride) out.push('ma jiro jahawareerka method-override')
   return out
 }
 
 const UNIVERSAL_QUIZ: { q: string; options: { text: string; correct?: boolean }[] }[] = [
   {
-    q: 'What makes a request “cross-site” for CSRF purposes?',
+    q: 'Maxaa codsi uga dhigaya “cross-site” marka loo eego CSRF?',
     options: [
-      { text: 'It is sent over HTTP instead of HTTPS' },
-      { text: 'It originates from a different site than the one being attacked, so the browser applies SameSite rules', correct: true },
-      { text: 'It uses POST instead of GET' },
-      { text: 'It carries a session cookie' },
+      { text: 'Waxaa lagu diraa HTTP halkii HTTPS' },
+      { text: 'Wuxuu ka yimaadaa goob ka duwan tan la weerarayo, sidaas darteed browser-ku wuxuu dabaqaa xeerarka SameSite', correct: true },
+      { text: 'Wuxuu isticmaalaa POST halkii GET' },
+      { text: 'Wuxuu wataa session cookie' },
     ],
   },
   {
-    q: 'Which is the strongest, most reliable CSRF defense?',
+    q: 'Kee baa ah difaaca CSRF ugu adag uguna lagu kalsoonaan karo?',
     options: [
-      { text: 'A session-bound, unpredictable CSRF token on every state-changing request', correct: true },
-      { text: 'Hiding the form from view' },
-      { text: 'Renaming the endpoint' },
-      { text: 'Using cookies' },
+      { text: 'CSRF token session-ka ku xidhan oo aan la saadaalin karin, codsi kasta oo xaalad beddela', correct: true },
+      { text: 'Form-ka qarin aragtida' },
+      { text: 'Endpoint-ka magac beddel' },
+      { text: 'Cookies isticmaal' },
     ],
   },
 ]
@@ -935,26 +946,26 @@ function RecapStep({ scenario, solved }: { scenario: LabScenario; solved: boolea
   return (
     <div className="flex flex-col gap-6">
       <Card className="p-6">
-        <StepHeader kicker="Step 6 — consolidation" title="Root cause, fix, and proof">
-          {solved ? 'You exploited the flaw and then closed it. That exploit → fix → retest loop is the whole job.' : 'Work through the recap and the knowledge check to lock in the lesson.'}
+        <StepHeader kicker="Tallaabo 6 — soo koobid" title="Asalka dhibka, xalka, iyo caddaynta">
+          {solved ? 'Waad ka faa\'iidaysatay cilladda dabadeed waad xirtay. Wareegga weerar → xal → dib-u-tijaabi waa shaqada oo dhan.' : 'Ka shaqee soo koobidda iyo hubinta aqoonta si aad casharka u xajiso.'}
         </StepHeader>
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border border-danger/30 bg-danger-soft p-4">
             <div className="flex items-center gap-2 text-danger">
               <ShieldAlert className="size-4" />
-              <p className="text-[13px] font-semibold text-ink">Root cause</p>
+              <p className="text-[13px] font-semibold text-ink">Asalka dhibka</p>
             </div>
             <p className="mt-2 text-[13px] leading-relaxed text-muted">{scenario.takeaway}</p>
           </div>
           <div className="rounded-lg border border-success/30 bg-success-soft p-4">
             <div className="flex items-center gap-2 text-success">
               <ShieldCheck className="size-4" />
-              <p className="text-[13px] font-semibold text-ink">The fix</p>
+              <p className="text-[13px] font-semibold text-ink">Xalka</p>
             </div>
             <p className="mt-2 text-[13px] leading-relaxed text-muted">
-              This endpoint should require {fixes.join(', ')}. No single setting is enough on its own —
-              layer them for defense in depth.
+              Endpoint-kan waa inuu dalbadaa {fixes.join(', ')}. Hal dejin keliya kuma filna —
+              lakab u samee difaac qoto dheer.
             </p>
           </div>
         </div>
@@ -972,10 +983,10 @@ function RecapStep({ scenario, solved }: { scenario: LabScenario; solved: boolea
       <Card className="p-6">
         <div className="flex items-center gap-2">
           <Lightbulb className="size-4 text-brand" />
-          <h3 className="text-sm font-semibold text-ink">Knowledge check</h3>
+          <h3 className="text-sm font-semibold text-ink">Hubinta aqoonta</h3>
           {allCorrect && (
             <Badge tone="success" className="ml-auto">
-              <Check className="size-3" /> All correct
+              <Check className="size-3" /> Dhammaan waa sax
             </Badge>
           )}
         </div>
@@ -1052,7 +1063,7 @@ function TraceList({ result }: { result: AttackResult }) {
     <div className="rounded-xl border border-line bg-surface p-4 shadow-card">
       <div className="mb-3 flex items-center gap-2">
         <Flag className="size-4 text-brand" />
-        <h3 className="text-sm font-semibold text-ink">What happened, hop by hop</h3>
+        <h3 className="text-sm font-semibold text-ink">Waxa dhacay, tallaabo kasta</h3>
       </div>
       <ol className="flex flex-col">
         {result.trace.map((s, i) => (
@@ -1087,7 +1098,7 @@ function CaseFile({ scenario, pwned, defended, fired }: { scenario: LabScenario;
           <p className="truncate font-mono text-[11px] text-faint">{scenario.victim.site}</p>
         </div>
         <span className="ml-auto">
-          {defended ? <Badge tone="success">Defended</Badge> : pwned ? <Badge tone="danger">Compromised</Badge> : fired ? <Badge tone="warning">Attempted</Badge> : <Badge tone="neutral">Target</Badge>}
+          {defended ? <Badge tone="success">La difaacay</Badge> : pwned ? <Badge tone="danger">La jabsaday</Badge> : fired ? <Badge tone="warning">La isku dayay</Badge> : <Badge tone="neutral">Bartilmaameed</Badge>}
         </span>
       </div>
       <p className="mt-3 text-[12.5px] leading-relaxed text-muted">{scenario.victim.disclosure}</p>
@@ -1110,15 +1121,15 @@ function CaseFile({ scenario, pwned, defended, fired }: { scenario: LabScenario;
 
 function PostureCard({ defense }: { defense: Defense }) {
   const rows = [
-    { label: 'CSRF token', ok: defense.token === 'bound', value: defense.token === 'bound' ? 'session-bound' : defense.token === 'none' ? 'none' : defense.token },
+    { label: 'CSRF token', ok: defense.token === 'bound', value: defense.token === 'bound' ? 'session-bound' : defense.token === 'none' ? 'midna' : defense.token },
     { label: 'SameSite', ok: defense.sameSite === 'strict', value: defense.sameSite },
-    { label: 'Origin check', ok: defense.originCheck, value: defense.originCheck ? 'on' : 'off' },
-    { label: 'Method', ok: defense.requirePost, value: defense.requirePost ? 'POST-only' : 'GET allowed' },
-    { label: 'Custom header', ok: defense.customHeader, value: defense.customHeader ? 'required' : 'none' },
+    { label: 'Hubinta Origin', ok: defense.originCheck, value: defense.originCheck ? 'daaran' : 'damsan' },
+    { label: 'Method', ok: defense.requirePost, value: defense.requirePost ? 'POST keliya' : 'GET la oggol yahay' },
+    { label: 'Custom header', ok: defense.customHeader, value: defense.customHeader ? 'loo baahan yahay' : 'midna' },
   ]
   return (
     <Card className="p-4">
-      <h3 className="text-sm font-semibold text-ink">Endpoint posture</h3>
+      <h3 className="text-sm font-semibold text-ink">Xaaladda endpoint-ka</h3>
       <ul className="mt-3 flex flex-col gap-2">
         {rows.map((r) => (
           <li key={r.label} className="flex items-center justify-between gap-2 text-[12.5px]">
@@ -1169,8 +1180,8 @@ function legitGet(scenario: LabScenario, id: number): Exchange {
     body: `${scenario.victim.site} account page`,
   }
   const findings: Finding[] = [
-    { level: 'info', title: 'Authenticated page load', detail: `The browser attached ${scenario.victim.name}’s session cookie to this same-origin request.` },
-    { level: 'warning', title: 'Session cookie is the only gate', detail: `Any request carrying this cookie to ${scenario.action.path} is treated as ${scenario.victim.name}.` },
+    { level: 'info', title: 'Soo-rid bog la aqoonsaday', detail: `Browser-ku wuxuu session cookie-ga ${scenario.victim.name} ku daray codsi same-origin ah.` },
+    { level: 'warning', title: 'Session cookie-gu waa albaabka oo keliya', detail: `Codsi kasta oo cookie-kan u qaada ${scenario.action.path} waxaa loo arkaa ${scenario.victim.name}.` },
   ]
   return { id, kind: 'legit', request, response, findings }
 }
@@ -1210,7 +1221,7 @@ function successResponse(scenario: LabScenario): HttpResponse {
       { name: 'Location', value: '/account', flag: 'muted' },
       { name: 'Content-Type', value: 'text/html' },
     ],
-    body: `${scenario.action.label} applied: ${scenario.action.after}`,
+    body: `${scenario.action.label} waa la dhaqan geliyay: ${scenario.action.after}`,
   }
 }
 
@@ -1224,17 +1235,17 @@ function blockedResponse(blockedBy?: string): HttpResponse {
 
 function blockReason(blockedBy?: string): string {
   const reasons: Record<string, string> = {
-    'SameSite=STRICT': 'The session cookie is SameSite=Strict, so the browser did not attach it. The server saw an anonymous request.',
-    'SameSite=LAX': 'The session cookie is SameSite=Lax and this is not a top-level GET, so the browser withheld it.',
-    'Missing CSRF token': 'No csrf_token was present in the request body. A session-bound token is required.',
-    'Session-bound CSRF token': 'The supplied CSRF token did not match the value bound to the session.',
-    'Cookie-bound CSRF token': 'The token did not match the value in the victim’s cookie.',
-    'Origin check': 'The Origin header is not this site. A page cannot forge its own origin.',
-    'POST-only endpoint': 'The endpoint only accepts POST; this method was not allowed.',
-    'Required custom header': 'A required custom header was missing — a cross-site HTML request cannot set one without a CORS preflight.',
-    'Referer check': 'The Referer header did not match the expected origin.',
+    'SameSite=STRICT': 'Session cookie-gu waa SameSite=Strict, sidaas darteed browser-ku ma darin. Server-ku wuxuu arkay codsi aan la aqoonsan.',
+    'SameSite=LAX': 'Session cookie-gu waa SameSite=Lax oo kani ma aha top-level GET, sidaas darteed browser-ku wuu celiyay.',
+    'Missing CSRF token': 'Jidhka codsiga lama helin csrf_token. Waxaa loo baahan yahay token session-ka ku xidhan.',
+    'Session-bound CSRF token': 'CSRF token-ka la bixiyay kuma habboona qiimaha session-ka ku xidhan.',
+    'Cookie-bound CSRF token': 'Token-ku kuma habboona qiimaha cookie-ga dhibanaha.',
+    'Origin check': 'Header-ka Origin ma aha kan goobtan. Bog ma been-abuuri karo asalkiisa.',
+    'POST-only endpoint': 'Endpoint-ku wuxuu aqbalaa POST oo keliya; method-kan lama oggola.',
+    'Required custom header': "Custom header loo baahnaa ayaa maqnaa — codsi HTML cross-site ah ma dhigi karo mid la'aantiis CORS preflight.",
+    'Referer check': 'Header-ka Referer kuma habboona asalka la filayay.',
   }
-  return reasons[blockedBy ?? ''] ?? 'A server-side defence rejected the request.'
+  return reasons[blockedBy ?? ''] ?? 'Difaac server-ku wuu diiday codsiga.'
 }
 
 function forgedFindings(d: Defense, vector: Vector, attached: boolean): Finding[] {
@@ -1242,35 +1253,35 @@ function forgedFindings(d: Defense, vector: Vector, attached: boolean): Finding[
   const out: Finding[] = []
 
   if (attached) {
-    out.push({ level: 'danger', title: 'Session cookie attached cross-site', detail: `SameSite=${d.sameSite} lets the browser send the session cookie on a request the attacker triggered.` })
+    out.push({ level: 'danger', title: 'Session cookie-ga waa lagu daray cross-site', detail: `SameSite=${d.sameSite} wuxuu browser-ka u oggolaanayaa inuu session cookie-ga diro codsi uu weeraryahanku kiciyay.` })
   } else {
-    out.push({ level: 'success', title: 'Cookie withheld cross-site', detail: `SameSite=${d.sameSite.toUpperCase()} stops the browser attaching the session cookie on this ${spec.method} ${spec.kind}.` })
+    out.push({ level: 'success', title: 'Cookie-ga waa la celiyay cross-site', detail: `SameSite=${d.sameSite.toUpperCase()} wuxuu browser-ka ka joojiyaa inuu session cookie-ga ku daro ${spec.method} ${spec.kind} kan.` })
   }
 
   if (spec.method === 'GET') {
-    out.push(d.requirePost ? { level: 'success', title: 'Endpoint is POST-only', detail: 'A GET vector is rejected before it can change anything.' } : { level: 'warning', title: 'Endpoint also accepts GET', detail: 'The same change can be triggered with no form at all.' })
+    out.push(d.requirePost ? { level: 'success', title: 'Endpoint-ku waa POST keliya', detail: 'Vector GET ah waa la diidaa ka hor inta uusan wax beddelin.' } : { level: 'warning', title: 'Endpoint-ku sidoo kale wuxuu aqbalaa GET', detail: 'Isla isbeddelka waxaa lagu kicin karaa iyadoo aan form jirin.' })
   }
 
   if (d.token === 'none') {
-    out.push({ level: 'danger', title: 'No anti-CSRF token', detail: 'Nothing in the request proves the user intended the change.' })
+    out.push({ level: 'danger', title: 'Ma jiro anti-CSRF token', detail: 'Wax codsiga ku jira ma caddeeyaan in isticmaalahu ujeedo isbeddelka.' })
   } else {
-    out.push({ level: 'success', title: 'CSRF token enforced', detail: 'The server validates a token the attacker cannot read or guess.' })
+    out.push({ level: 'success', title: 'CSRF token waa lagu dabaqay', detail: 'Server-ku wuxuu xaqiijiyaa token aan weeraryahanku akhrin ama qiyaasi karin.' })
   }
 
   if (!d.originCheck) {
-    out.push({ level: 'danger', title: `Origin is ${ATTACKER_ORIGIN}`, detail: 'The flag marks a request from a foreign origin; the server ignores it.' })
+    out.push({ level: 'danger', title: `Origin waa ${ATTACKER_ORIGIN}`, detail: 'Calaamaddu waxay muujinaysaa codsi ka yimid asal shisheeye; server-ku wuu iska indhatiraa.' })
   } else {
-    out.push({ level: 'success', title: 'Origin validated', detail: 'The server compares Origin against its own site and drops foreign-origin requests.' })
+    out.push({ level: 'success', title: 'Origin waa la xaqiijiyay', detail: 'Server-ku wuxuu Origin isbarbardhigaa goobtiisa oo wuu diidaa codsiyada asal shisheeye.' })
   }
 
   if (d.customHeader) {
-    out.push({ level: 'success', title: 'Custom header required', detail: 'A cross-site page cannot set the custom header without a CORS preflight the server refuses.' })
+    out.push({ level: 'success', title: 'Custom header waa loo baahan yahay', detail: "Bog cross-site ah ma dhigi karo custom header kaas la'aantiis CORS preflight oo server-ku diido." })
   }
 
   if (d.refererCheck === 'contains') {
-    out.push({ level: 'warning', title: 'Substring Referer match', detail: 'The server only checks whether Referer contains the domain — easy to satisfy.' })
+    out.push({ level: 'warning', title: 'Isbarbardhig Referer substring', detail: 'Server-ku wuxuu oo keliya hubiyaa haddii Referer uu ku jiro domain-ka — fudud in la buuxiyo.' })
   } else if (d.refererCheck === 'if-present') {
-    out.push({ level: 'warning', title: 'Referer skipped when absent', detail: 'Omitting the Referer header bypasses the check entirely.' })
+    out.push({ level: 'warning', title: 'Referer-ka waa la boodaa marka uu maqan yahay', detail: 'In la boodo header-ka Referer ayaa gebi ahaanba dhaafi karta hubinta.' })
   }
 
   return out

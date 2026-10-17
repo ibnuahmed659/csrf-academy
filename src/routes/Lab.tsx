@@ -26,16 +26,16 @@ export default function Lab() {
           to="/labs"
           className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'gap-1.5')}
         >
-          <ArrowLeft className="size-4" /> All labs
+          <ArrowLeft className="size-4" /> Dhammaan lab-yada
         </Link>
         <Badge tone={scenario.mode === 'exploit' ? 'danger' : 'accent'}>
-          {scenario.mode === 'exploit' ? 'Exploit' : 'Assess'}
+          {scenario.mode === 'exploit' ? 'Weerar' : 'Demaamil'}
         </Badge>
         <Badge tone="neutral">{STAGE_LABEL[scenario.stage]}</Badge>
         <Badge tone="neutral">{scenario.category}</Badge>
         {solved && (
           <Badge tone="success">
-            <Check className="size-3" /> Solved
+            <Check className="size-3" /> La xalliyay
           </Badge>
         )}
       </div>
@@ -54,7 +54,7 @@ export default function Lab() {
           to="/labs"
           className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'gap-1.5 self-start')}
         >
-          <ArrowLeft className="size-4" /> All labs
+          <ArrowLeft className="size-4" /> Dhammaan lab-yada
         </Link>
         {next && (
           <Link
@@ -64,7 +64,7 @@ export default function Lab() {
               'min-w-0 gap-1.5 whitespace-normal text-left',
             )}
           >
-            <span className="truncate">Next: {next.title}</span>
+            <span className="truncate">Xiga: {next.title}</span>
             <ArrowRight className="size-4 shrink-0" />
           </Link>
         )}

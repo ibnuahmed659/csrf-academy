@@ -9,13 +9,13 @@ const ACCENT: Record<BrowserKind, { dot: string; ring: string; badge: string; la
     dot: 'bg-accent',
     ring: 'ring-accent/40',
     badge: 'bg-accent-soft text-accent',
-    label: 'Victim browser',
+    label: 'Browser-ka dhibanaha',
   },
   attacker: {
     dot: 'bg-danger',
     ring: 'ring-danger/40',
     badge: 'bg-danger-soft text-danger',
-    label: 'Attacker browser',
+    label: 'Browser-ka weeraryahanka',
   },
 }
 
@@ -110,7 +110,7 @@ export function BrowserChrome({
             type="button"
             onClick={onBack}
             disabled={!canGoBack}
-            aria-label="Back"
+            aria-label="Noqosho"
             className={cn(
               'grid size-5 place-items-center rounded transition',
               canGoBack ? 'hover:bg-surface-3 hover:text-ink' : 'opacity-40',

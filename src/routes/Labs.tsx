@@ -14,21 +14,21 @@ export default function Labs() {
     <div className="container-page py-10">
       <header className="mb-8 flex flex-col gap-4">
         <Badge tone="danger" className="w-fit">
-          <Beaker className="size-3" /> Attack Labs
+          <Beaker className="size-3" /> Lab-yada Weerarka
         </Badge>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-              Forge real requests
+              Samee codsiyo dhab ah
             </h1>
             <p className="mt-2 max-w-2xl text-muted">
-              Each lab is a live target. Craft the attack, watch every hop, then flip the
-              defenses and break your own exploit.
+              Lab kastaa waa bartilmaameed nool. Samee weerarka, fiirso tallaabo kasta,
+              dabadeed beddel difaacyada oo jabi weerarkaaga.
             </p>
           </div>
           <div className="w-full max-w-xs">
             <div className="mb-1.5 flex items-center justify-between text-sm">
-              <span className="text-muted">Solved</span>
+              <span className="text-muted">La xalliyay</span>
               <span className="font-semibold text-ink">
                 {solvedCount} / {LAB_SCENARIOS.length}
               </span>
@@ -47,7 +47,7 @@ export default function Labs() {
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-semibold text-ink">{STAGE_LABEL[stage]}</h2>
                 <span className="h-px flex-1 bg-line" />
-                <span className="text-sm text-faint">{labs.length} labs</span>
+                <span className="text-sm text-faint">{labs.length} lab</span>
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {labs.map((lab) => {
@@ -65,11 +65,11 @@ export default function Labs() {
                         <Badge tone={lab.mode === 'exploit' ? 'danger' : 'accent'}>
                           {lab.mode === 'exploit' ? (
                             <>
-                              <ShieldAlert className="size-3" /> Exploit
+                              <ShieldAlert className="size-3" /> Weerar
                             </>
                           ) : (
                             <>
-                              <Lock className="size-3" /> Assess
+                              <Lock className="size-3" /> Demaamil
                             </>
                           )}
                         </Badge>
@@ -88,7 +88,7 @@ export default function Labs() {
                       </p>
                       <span className="mt-auto inline-flex items-center gap-1.5 text-[13px] font-medium text-brand">
                         <Flag className="size-3.5" />
-                        Open lab
+                        Fur lab-ka
                       </span>
                     </Link>
                   )

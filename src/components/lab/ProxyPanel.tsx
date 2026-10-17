@@ -36,10 +36,10 @@ const KIND_CLS: Record<ExchangeKind, string> = {
 }
 
 function statusOf(ex: Exchange): { label: string; cls: string } {
-  if (ex.pending) return { label: 'intercepted', cls: 'text-danger' }
-  if (ex.kind === 'forged' && ex.pwned) return { label: ex.response?.status ?? 'applied', cls: 'text-danger' }
-  if (ex.kind === 'forged' && ex.blockedBy) return { label: '403 blocked', cls: 'text-success' }
-  return { label: ex.response?.status ?? 'sent', cls: 'text-muted' }
+  if (ex.pending) return { label: 'la qabtay', cls: 'text-danger' }
+  if (ex.kind === 'forged' && ex.pwned) return { label: ex.response?.status ?? 'la dhaqan-geliyay', cls: 'text-danger' }
+  if (ex.kind === 'forged' && ex.blockedBy) return { label: '403 la xannibay', cls: 'text-success' }
+  return { label: ex.response?.status ?? 'la diray', cls: 'text-muted' }
 }
 
 export interface ProxyPanelProps {
@@ -60,7 +60,7 @@ export function ProxyPanel({
   onSelect,
   onForward,
   onDrop,
-  title = 'Intercepting proxy',
+  title = 'Proxy-ga dhexgeliya',
   toolbar,
   className,
 }: ProxyPanelProps) {
@@ -72,7 +72,7 @@ export function ProxyPanel({
         <History className="size-3.5 text-code-fg/60" />
         <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-code-fg/60">{title}</span>
         <span className="rounded-full bg-white/5 px-2 py-0.5 font-mono text-[10px] text-code-fg/60">
-          {exchanges.length} {exchanges.length === 1 ? 'request' : 'requests'}
+          {exchanges.length} {exchanges.length === 1 ? 'codsi' : 'codsiyo'}
         </span>
         {toolbar && <div className="ml-auto flex items-center gap-1.5">{toolbar}</div>}
       </div>
@@ -122,12 +122,12 @@ export function ProxyPanel({
               <>
                 {onForward && (
                   <Button variant="danger" size="sm" onClick={() => onForward(selected.id)}>
-                    <Send className="size-3.5" /> Forward
+                    <Send className="size-3.5" /> U gudbi
                   </Button>
                 )}
                 {onDrop && (
                   <Button variant="ghost" size="sm" onClick={() => onDrop(selected.id)}>
-                    <Trash2 className="size-3.5" /> Drop
+                    <Trash2 className="size-3.5" /> Tuur
                   </Button>
                 )}
               </>
@@ -136,7 +136,7 @@ export function ProxyPanel({
         />
       ) : (
         <div className="px-3.5 py-6 text-center font-mono text-[12px] text-code-fg/50">
-          No requests captured yet.
+          Weli lama soo qaban wax codsi ah.
         </div>
       )}
     </div>

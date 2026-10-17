@@ -59,6 +59,12 @@ export interface HttpInspectorProps {
 
 type Tab = 'request' | 'response' | 'findings'
 
+const TAB_LABEL: Record<Tab, string> = {
+  request: 'codsi',
+  response: 'jawaab',
+  findings: 'aragtiyo',
+}
+
 export function HttpInspector({
   request,
   response,
@@ -81,11 +87,11 @@ export function HttpInspector({
     >
       <div className="flex flex-wrap items-center gap-2 border-b border-code-line px-3 py-2">
         <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-code-fg/60">
-          Intercepting proxy
+          Proxy-ga dhexgeliya
         </span>
         {intercepting && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-danger/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-danger">
-            <span className="size-1.5 animate-pulse rounded-full bg-danger" /> intercepted
+            <span className="size-1.5 animate-pulse rounded-full bg-danger" /> la qabtay
           </span>
         )}
         <div className="ml-auto flex items-center gap-1">
@@ -102,7 +108,7 @@ export function HttpInspector({
                     : 'text-code-fg/50 hover:text-code-fg',
                 )}
               >
-                {t}
+                {TAB_LABEL[t]}
                 {t === 'findings' && dangerCount > 0 && (
                   <span className="ml-1 rounded-full bg-danger/30 px-1.5 text-[10px] text-danger">
                     {findings.length}
@@ -142,7 +148,7 @@ function RawRequest({ request }: { request: HttpRequest }) {
           {h.name}: {h.value}
           {h.flag === 'suspect' && (
             <span className="ml-2 text-[10px] font-bold uppercase not-italic text-danger">
-              ← flagged
+              ← la calaamadeeyay
             </span>
           )}
         </div>
@@ -183,7 +189,7 @@ function RawResponse({ response }: { response: HttpResponse }) {
 
 function Findings({ findings }: { findings: Finding[] }) {
   if (findings.length === 0) {
-    return <p className="font-sans text-sm text-code-fg/60">No observations.</p>
+    return <p className="font-sans text-sm text-code-fg/60">Ma jiro wax aragti ah.</p>
   }
   return (
     <ul className="flex flex-col gap-2.5 font-sans">

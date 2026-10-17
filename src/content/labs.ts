@@ -1,0 +1,634 @@
+/**
+ * Lab content (Somali).
+ *
+ * The structural data for each lab lives in `src/lib/lab/scenarios.ts`;
+ * all learner-facing text is read from here. Edit only the string
+ * values. Do not change the keys or the lab ids.
+ *
+ * Translation notes:
+ *  - `actionBefore` / `actionAfter` are the account state — keep them short.
+ *  - `walkthrough[].title` / `walkthrough[].body` are the "recap" cards.
+ *  - `hints` are the "Nudges" panel entries.
+ */
+
+export type LabText = {
+  /** Lab title. */
+  title: string
+  /** One-line description. */
+  summary: string
+  /** Short lesson shown after solving. */
+  takeaway: string
+  /** Where the victim is signed in. */
+  victimDisclosure: string
+  /** Name of the action (e.g. "Change account email"). */
+  actionLabel: string
+  /** Account state before. */
+  actionBefore: string
+  /** Account state after the attack succeeds. */
+  actionAfter: string
+  /** Lab objectives. */
+  objectives: string[]
+  /** "Nudges" — progressive hints. */
+  hints: string[]
+  /** Recap cards: title + body. */
+  walkthrough: { title: string; body: string }[]
+}
+
+export const LAB_TEXT: Record<string, LabText> = {
+  'classic-post': {
+    title: 'form-ka ee caadiga ah',
+    summary:
+      'Vault Bank wuxuu kuu oggolaanayaa inaad email-kaaga ku beddesho POST caadi ah oo aan lahayn token. Samee request been-abuur ah iyadoo victim-ku signed in yahay.',
+    takeaway:
+      'Request wax ka beddelaya xaaladda oo aan lahayn anti-CSRF token waxa laga been-abuuri karaa website kasta oo victim-ku booqdo.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay Vault Bank.',
+    actionLabel: 'Beddel email-ka account-ka',
+    actionBefore: 'amina@vault.example',
+    actionAfter: 'attacker@evil.example',
+    objectives: [
+      'Samee request been-abuur ah oo Amina email-keeda u beddelaya attacker@evil.example',
+      'U fiirso sida session cookie-gu si toos ah ula socdo request-ka',
+    ],
+    hints: [
+      'Cross-site POST laga soo diro form qarsoon waa CSRF vector-ka caadiga ah.',
+      'Dooro “Form → POST” oo weerarka bilow.',
+    ],
+    walkthrough: [
+      {
+        title: 'Sababta uu u shaqeeyo',
+        body: 'Endpoint-ku wuxuu aaminaa request kasta oo wata session cookie sax ah. Browser-ku si toos ah ayuu cookie-ga ugu daraa cross-site requests marka SameSite=None yahay.',
+      },
+      {
+        title: 'Xalka',
+        body: 'Dalbo CSRF token u gaar ah session kasta. Weeraryahanku ma akhrin karo token-ka victim-ka, sidaas darteed request-ka been-abuurka ahi wuu fashilmaa.',
+      },
+    ],
+  },
+
+  'samesite-lax': {
+    title: 'Marka SameSite=Lax aanu ku filnayn',
+    summary:
+      'Cookie-gu hadda waa SameSite=Lax, sidaas darteed cross-site POST kuma raaco — balse endpoint-ku weli GET ayuu aqbalaa. Raadi vector-ka weli shaqaynaya.',
+    takeaway:
+      'SameSite=Lax wuxuu xannibaa cross-site POST, laakiin cookies-ka weli wuxuu ku daraa top-level GET navigations. Oggolaanshaha GET ee endpoint wax ka beddelaya xaaladda wuxuu dib u furayaa nuglaanta.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay KeepSafe.',
+    actionLabel: 'Demi two-factor recovery',
+    actionBefore: 'Recovery waa daaran yahay',
+    actionAfter: 'Recovery waa dansan yahay',
+    objectives: [
+      'Demi recovery-ga account-ka Daniel adigoo adeegsanaya GET-based vector',
+      'Ogaaw in POST form-ka uu xannibmo sababo la xiriira SameSite=Lax',
+    ],
+    hints: [
+      'POST-ku cookie-ga ma wato marka Lax la adeegsanayo — balse top-level GET navigation ayaa wadata.',
+      'Isku day vector-ka “Link / redirect” ama “Image (GET)”… navigation-ka oo keliya ayaa shaqaynaya.',
+    ],
+    walkthrough: [
+      {
+        title: 'Macnaha Lax',
+        body: 'Lax wuxuu cookies-ka diraa oo keliya marka ay jiraan top-level GET navigations. <img> waa subresource gadaal ka shaqeeya, sidaas darteed waa la xannibaa; link-ga victim-ku gujiyo se waa navigation, sidaas darteed waa la oggolaadaa.',
+      },
+      {
+        title: 'Xalka',
+        body: 'Marna ha u oggolaan GET inuu xaalad beddelo. Dalbo POST iyo session-bound token labadaba si navigation iyo form forgery midna u shaqayn waayaan.',
+      },
+    ],
+  },
+
+  'get-image': {
+    title: 'Sawirka aan muuqan',
+    summary:
+      'Metrics endpoint-ku wuxuu aqbalaa isbeddellada settings-ka isagoo adeegsanaya GET iyo query parameters. Ku dhex geli request adigoo adeegsanaya <img> kiciya marka boggu furmo.',
+    takeaway:
+      'GET kasta oo xaalad beddela waxa kicin kara subresource sida image, stylesheet ama iframe — gujin looma baahna.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay Streamly.',
+    actionLabel: 'Raac account-ka weeraryahanka',
+    actionBefore: 'Ma raacayo evil_actor',
+    actionAfter: 'Wuxuu raacayaa evil_actor',
+    objectives: ['Ka dhig Priya inay raacdo evil_actor iyada oo aan waxba gujin'],
+    hints: [
+      'GET-ka <img> si qarsoodi ah ayuu u kiciyaa inta boggu load-garaysanayo.',
+      'Dooro “Image (GET)” oo orodsiiso.',
+    ],
+    walkthrough: [
+      {
+        title: 'Subresources-ka aamusan',
+        body: 'Browsers-ku si toos ah ayay u soo fetch-gareeyaan images, iframes iyo stylesheets. Haddii kuwaasi xaalad beddeli karaan, weeraryahanku uma baahna wax interaction ah.',
+      },
+      {
+        title: 'Xalka',
+        body: 'GET ku koob akhriska, qoraalladana ku samee POST; dabadeed qoraallada ku ilaali token.',
+      },
+    ],
+  },
+
+  'samesite-strict': {
+    title: 'Fahamka difaac adag',
+    summary:
+      'Bartilmaameedkani wuxuu dejinayaa SameSite=Strict. Isku day vector kasta oo sharax sababta midkoodna u qaadi karin session-ka victim-ka.',
+    takeaway:
+      'SameSite=Strict wuxuu cookie-ga ka reebaa dhammaan cross-site requests — waa difaac aasaasi ah oo fudud oo waxtar badan.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay OneStore.',
+    actionLabel: 'Cinwaanka weeraryahanka u deji default ahaan',
+    actionBefore: 'Default: home',
+    actionAfter: 'Default: attacker drop',
+    objectives: [
+      'Orodsiiso ugu yaraan saddex vector oo kala duwan, kuna xaqiiji in cookie-ga aan la dirin',
+      'Difaaca ku sharax hal jumlad',
+    ],
+    hints: [
+      'Marka Strict la joogo, cross-site request — GET ama POST — midna ma noqonayo mid authenticated ah.',
+      'Isku day form-ka, image-ka iyo link-ga. Browser-ku dhammaantood waa inuu xannibaa.',
+    ],
+    walkthrough: [
+      {
+        title: 'Sababta aan waxba u gudbin',
+        body: 'Strict wuxuu cookie-ga ka reebaa cross-site request kasta. Request-ka been-abuurka ahi wuxuu yimaadaa isagoo anonymous ah, server-kuna cidna kuma xiro.',
+      },
+      {
+        title: 'Xaddidaad',
+        body: 'Strict wuxuu carqaladayn karaa hababka saxda ah ee top-level navigation; taas awgeed websites badan waxay Lax ku lammaaniyaan token.',
+      },
+    ],
+  },
+
+  'token-unbound': {
+    title: 'Token qof walba aamina',
+    summary:
+      'Endpoint-ku hadda wuxuu dalbanayaa CSRF token — laakiin wuxuu hubiyaa oo keliya in token-ku sax yahay, mana hubiyo inuu victim-ka leeyahay. Adigu keen token-kaaga.',
+    takeaway:
+      'Token lagu hubiyo kayd guud halkii session-ka lagu xiri lahaa wax difaac ah ma bixiyo: weeraryahanku wuxuu adeegsan karaa token isaga u gaar ah oo sax ah.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay PayFlow.',
+    actionLabel: 'Ku dar payee',
+    actionBefore: 'Payees: midna ma jiro',
+    actionAfter: 'Payees: DE00EVIL0000',
+    objectives: [
+      'Ku dar payee weeraryahan leeyahay inkastoo token loo baahan yahay',
+      'Request-ka been-abuurka ah geli token adigu kuu gaar ah',
+    ],
+    hints: [
+      'Server-ku wuxuu aqbalaa token kasta oo qaab sax ah leh. Adigu mid keen.',
+      'Dooro POST form-ka, wax ku qor token field-ka, dabadeed orodsiiso.',
+    ],
+    walkthrough: [
+      {
+        title: 'Tokens aan la xidhin',
+        body: 'Haddii server-ku tokens-ka ku xaqiijiyo liis guud, attacker authenticated ah wuxuu token ka soo qaadan karaa account-kiisa oo dib ugu adeegsan karaa kan victim-ka.',
+      },
+      {
+        title: 'Xalka',
+        body: 'Token-ka ku kaydi session-ka victim-ka oo la barbar dhig qiimahaas saxda ah.',
+      },
+    ],
+  },
+
+  'token-bound': {
+    title: 'Token aan laga geli karin',
+    summary:
+      'Hadda token-ku wuxuu ku xidhan yahay session-ka, SameSite-na waa Lax. Caddee in aanay suurtagal ahayn in request-ka la been-abuuro adigoon akhrin bogga victim-ka.',
+    takeaway:
+      'Session-bound token-ku wuxuu joojiyaa CSRF sababtoo ah weeraryahanku ma akhrin karo mana saadaalin karo sirta victim-ka.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay MediBook.',
+    actionLabel: 'Dib ugu meelee ballanta',
+    actionBefore: 'Waxaa loo qoondeeyay Lena',
+    actionAfter: 'Waxaa loo qoondeeyay weeraryahanka',
+    objectives: [
+      'Isku day inaad request-ka been-abuurto, kuna xaqiiji in token check-ku ku joojinayo',
+      'Sharax sababta aanu weeraryahanku token-ka u heli karin',
+    ],
+    hints: [
+      'POST form-ka waxaa joojinaya SameSite=Lax — u beddel Link / GET navigation si request-ku dhab ahaan server-ka u gaaro.',
+      'Ma taqaanid token-ka Lena, sidaas darteed server-ku token check-ga ayuu request-ka ku diidayaa.',
+    ],
+    walkthrough: [
+      {
+        title: 'Caqabadda',
+        body: 'Token-ka akhrintiisu waxay u baahan tahay in code-ka weeraryahanku ka dhex shaqeeyo origin-ka victim-ka (XSS). CSRF keligiis ma gaadhi karo.',
+      },
+      {
+        title: 'Difaac is-dulsaaran',
+        body: 'Token-ka oo lala isticmaalo SameSite=Lax wuxuu adkaynayaa in token la faafiyay cross-site loogu adeegsado.',
+      },
+    ],
+  },
+
+  'token-leak': {
+    title: 'Token-kii bannaanka yaallay',
+    summary:
+      'Token-ku session-ka ayuu ku xidhan yahay — laakiin app-ku sidoo kale wuxuu ku daraa URL-ka bogga, halkaas oo weeraryahanku ka xadi karo. Isku xidh xog-baxa iyo request been-abuur ah.',
+    takeaway:
+      'Session-bound token-ku waxa uu u xoog badan yahay inta uu sir yahay oo keliya. Haddii uu baxo (URLs, logs, referrers), jidkii CSRF dib ayuu u furmaa.',
+    victimDisclosure: 'Waxaad signed in uga tahay DocuHub; token-ku wuxuu ka muuqdaa profile URL-kiisa.',
+    actionLabel: 'Beddel password-ka account-ka',
+    actionBefore: 'Password: user-ku doortay',
+    actionAfter: 'Password: weeraryahanku maamulo',
+    objectives: [
+      'Soo hel token-ka Tomas ee baxay oo ku dheji POST-ga been-abuurka ah',
+      'Beddel password-kiisa inkastoo token-ku session-ka ku xidhan yahay',
+    ],
+    hints: [
+      'Token-ka victim-ka ee baxay waxa lagu muujiyay victim panel-ka — koobi garee.',
+      'Ku dheji token field-ka ee POST form vector-ka.',
+    ],
+    walkthrough: [
+      {
+        title: 'Meelaha tokens-ku ka baxaan',
+        body: 'Token-ka URL-ka oo la geliyo wuxuu ka muuqan karaa Referer header-ka, browser history-ga, server logs-ka iyo links la wadaago. Marka uu baxo, difaacu wuu burburaa.',
+      },
+      {
+        title: 'Xalka',
+        body: 'Tokens-ka ka ilaali URLs, Origin-na u xaqiiji difaac labaad ahaan, kuna xidh session-ka.',
+      },
+    ],
+  },
+
+  'custom-header': {
+    title: 'Fetch metadata oo la dhaqan-geliyay',
+    summary:
+      'API-gani wuxuu u baahan yahay X-Requested-With header. Isku day inaad request-ka HTML ku been-abuurto oo ogow sababta bog cross-site ahi u samayn kari waayo.',
+    takeaway:
+      'Dalbashada custom header-ku waxay khasab ka dhigtaa CORS preflight, kaas oo server-ku diidi karo — waa difaac adag oo JSON APIs ah.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay CloudDesk.',
+    actionLabel: 'Ka noqo security key',
+    actionBefore: 'Key k-2039 waa active',
+    actionAfter: 'Key k-2039 waa la revoke-gareeyay',
+    objectives: [
+      'Isku day vector kasta oo xaqiiji in custom header-ka loo baahan yahay uu xannibayo',
+      'Sharax doorka CORS preflight',
+    ],
+    hints: [
+      'Requests HTML keliya ahi ma dejin karaan custom headers.',
+      'Fetch-ku wuxuu u baahan lahaa header-ka, taas oo dhalinaysa preflight uu server-ku diido.',
+    ],
+    walkthrough: [
+      {
+        title: 'Caqabadda preflight-ka',
+        body: 'Ku darista X-Requested-With waxay request-ka ka dhigtaa non-simple CORS request. Browser-ku marka hore wuxuu diraa OPTIONS preflight; haddii server-ku aanu oggolaan, request-ka dhabta ahi marnaba ma baxo.',
+      },
+      {
+        title: 'Isku dar difaacyada',
+        body: 'Custom-header checks-ku si fiican ayay ula shaqeeyaan SameSite iyo tokens si loo helo difaac heerar badan leh.',
+      },
+    ],
+  },
+
+  'origin-check': {
+    title: 'Albaabka Origin',
+    summary:
+      'Token ma jiro — waxa keliya oo jira waa xaqiijin adag oo Origin/Referer ah oo lagu sameeyo request kasta oo xaalad beddela. Caddee inaan request been-abuur ahi iska dhigi karin origin-ka ilaha.',
+    takeaway:
+      'Origin/Referer checks-ku waxay diidaan cross-site requests sababtoo ah boggu ma been-abuuri karo origin header-kiisa.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay AdminPanel.',
+    actionLabel: 'Sii role-ka admin',
+    actionBefore: 'attacker: member',
+    actionAfter: 'attacker: admin',
+    objectives: [
+      'Isku day inaad request-ka been-abuurto, kuna xaqiiji in Origin check-ku diido',
+      'Sharax sababta aanu weeraryahanku Origin u spoof-gareyn karin',
+    ],
+    hints: [
+      'Origin-ka browser-ka ayaa dejinaya, script-na ma maamuli karo.',
+      'Orodsiiso vector kasta; server-ku request-ka wuu tuurayaa isagoo soo celinaya badbaadinta badnayn ee Origin.',
+    ],
+    walkthrough: [
+      {
+        title: 'Lama spoof-gareyn karo',
+        body: 'Cookie ama hidden form field kama duwana, Origin (iyo Referer) header-ka browser-ka ayaa u doorta request-ka dhabta ah. Bogga weeraryahanku waxa keliya oo uu sheegi karaa origin-kiisa.',
+      },
+      {
+        title: 'Ka taxaddar null',
+        body: 'Ka digtoonow sandboxed iframes iyo redirects keeni kara null Origin — taasna si cad u xaqiiji.',
+      },
+    ],
+  },
+
+  'double-submit': {
+    title: 'Double-submit oo qayb ahaan la xaqiijiyay',
+    summary:
+      'App-ku wuxuu adeegsadaa double-submit cookie, balse qiimaha marna random kama dhigo mana xidho — geli lammaane is-waafaqa, endpoint-kana waa la khiyaaneeyaa.',
+    takeaway:
+      'Double-submit-ku wuxuu shaqeeyaa oo keliya haddii cookie value-gu yahay mid aan la saadaalin karin, cookie-gana aanu weeraryahanku beeran karin.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay Marketplace.',
+    actionLabel: 'Aqbal listing xaasidnimo leh',
+    actionBefore: 'item-ku wuu sugayaa',
+    actionAfter: 'item-ka waa la ansixiyay',
+    objectives: [
+      'Gudbi cookie/body token pair is-waafaqa si aad uga gudubto double-submit check-ga',
+      'Ansixi listing-ka xaasidnimada leh',
+    ],
+    hints: [
+      'Qiimaha la aqbalo waa mid joogto ah — waa constant la yaqaan, mana aha sir random ah.',
+      'Isticmaal POST form-ka oo geli qiimaha token-ka la yaqaan.',
+    ],
+    walkthrough: [
+      {
+        title: 'Sababta double-submit-ku u fashilmi karo',
+        body: 'Haddii cookie value-gu joogto yahay ama la saadaalin karo, ama weeraryahanku cookies ka dejin karo domain-ka bartilmaameedka (tusaale, subdomain la xidhiidha), wuxuu keeni karaa lammaane is-waafaqa.',
+      },
+      {
+        title: 'Adkee',
+        body: 'Token-ka session kasta ka dhig random, saxeex, session-ka ku xidh, cookie-gana calaamadee Secure + HttpOnly marka ay suurtagal tahay.',
+      },
+    ],
+  },
+
+  'method-override': {
+    title: 'Token-ka POST oo keliya ilaaliya',
+    summary:
+      'Token-ka waxa la xaqiijiyaa oo keliya marka request-ku yahay POST. Habka u beddel GET si check-ga looga boodo — email-ku weli wuu isbeddelayaa.',
+    takeaway:
+      'Method-ku difaac ma aha. Haddii token-ka la xaqiijiyo oo keliya marka method-ku yahay POST, GET ayaa ka dhex baxsanaya.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay lab-ka.',
+    actionLabel: 'Beddel email-ka account-ka',
+    actionBefore: 'test@test.com',
+    actionAfter: 'attacker@evil.com',
+    objectives: [
+      'Beddel email-ka inkastoo token khasab yahay',
+      'Method-ka u beddel GET si token check-ga looga boodo',
+    ],
+    hints: [
+      'Token-ka waxa la xaqiijiyaa oo keliya marka POST la adeegsado — isku day GET.',
+      'Dooro “Form → GET” oo orodsiiso request-ka.',
+    ],
+    walkthrough: [
+      {
+        title: 'Token ku xidhan method-ka',
+        body: 'Server-ku token-ka wuxuu xaqiijiyaa oo keliya marka method-ku yahay POST. GET uma baahna token, sidaas darteed weeraryahanku GET ayuu adeegsadaa.',
+      },
+      {
+        title: 'Xalka',
+        body: 'Token-ka ku xaqiiji method kasta, marna ha u oggolaan GET inuu xaalad beddelo.',
+      },
+    ],
+  },
+
+  'token-presence': {
+    title: 'Token ay tahay inuu keliya jiro',
+    summary:
+      'CSRF token wuu jiraa waana la hubiyaa — laakiin keliya haddii uu request-ka ku jiro. Token-ka ka tirtir request-ka, check-guna ma shaqaynayo.',
+    takeaway:
+      'Jiritaanku saxnaansho ma aha. Haddii check-ga lagu xidho “haddii uu jiro”, token-ka oo la saaro ayaa ka boodsiinaya.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay lab-ka.',
+    actionLabel: 'Beddel email-ka account-ka',
+    actionBefore: 'test@test.com',
+    actionAfter: 'attacker@evil.com',
+    objectives: [
+      'Beddel email-ka adigoo token-ka ka tirtiraya request-ka',
+      'Dhis exploit form aan lahayn csrf input haba yaraatee',
+    ],
+    hints: [
+      'Server-ku token-ka wuxuu xaqiijiyaa oo keliya haddii uu request-ka ku jiro.',
+      'Dooro “Form → POST” oo token field-ka madhan ka tag.',
+    ],
+    walkthrough: [
+      {
+        title: 'Token ku xidhan jiritaanka',
+        body: 'Code-ku wuxuu leeyahay: haddii csrf jiro, xaqiiji. Haddii uu maqan yahay, check ma shaqaynayo. Weeraryahanku si fudud ayuu token-ka uga tagaa request-ka.',
+      },
+      {
+        title: 'Xalka',
+        body: 'Token-ku waa inuu jiraa waana inuu sax noqdaa — waligaa check-ga ha ku duubin “haddii uu jiro”.',
+      },
+    ],
+  },
+
+  'token-cookie-crlf': {
+    title: 'Token ku xidhan cookie khaldan',
+    summary:
+      'csrfKey cookie-gu kuma xidhna session-ka, CRLF injection-na wuxuu weeraryahanka u oggolaanayaa inuu cookie ku beero browser-ka victim-ka.',
+    takeaway:
+      'Laba qaybood oo “secure” ah oo si xun la isugu daray way is-baabi\'in karaan. Marka qoraalku code isu beddelo, headers-ku way jabi karaan.',
+    victimDisclosure: 'Waxaad signed in uga tahay lab-ka; csrfKey waa cookie aan HttpOnly ahayn.',
+    actionLabel: 'Beddel email-ka account-ka',
+    actionBefore: 'test@test.com',
+    actionAfter: 'attacker@evil.com',
+    objectives: [
+      'CRLF injection ku beer csrfKey cookie-ga browser-ka victim-ka',
+      'Beddel email-ka adigoo adeegsanaya cookie-ga aad maamusho',
+    ],
+    hints: [
+      'Search endpoint-ku input-ka ayuu dib u soo bandhigaa — %0d%0a wuxuu noqdaa xadka header-ka.',
+      'Dooro “Form → POST” — ka dhig cookie-ga la beeray iyo body token-ku inay is-waafaqaan.',
+    ],
+    walkthrough: [
+      {
+        title: 'Dhibaatada isku-darka',
+        body: 'Session cookie-gu waa HttpOnly, balse csrfKey sidaas ma aha, labadooduna isma xidhna. Haddii weeraryahanku dejin karo csrfKey cookie-ga, cookie-bound token-ku wuu fashilmaa.',
+      },
+      {
+        title: 'Buundada CRLF',
+        body: 'input = test%0d%0aSet-Cookie:%20csrfKey=attacker — server-ku wuxuu soo saaraa Set-Cookie labaad, sidaas darteed weeraryahanku cookie-ga ayuu maamulaa.',
+      },
+    ],
+  },
+
+  'double-submit-crlf': {
+    title: 'Token-ka cookie-ga lagu nuqulay',
+    summary:
+      'Double submit: csrf cookie-gu waa inuu la mid noqdaa csrf body-ga. Weeraryahanku wuxuu adeegsadaa CRLF injection si uu csrf=fake ugu beero browser-ka victim-ka.',
+    takeaway:
+      'Double submit-ku wuxuu ku tiirsan yahay qiyaas ah: “weeraryahanku cookies ma dejin karo”. CRLF injection-ku qiyaastaas ayuu burinayaa.',
+    victimDisclosure: 'Waxaad signed in uga tahay lab-ka; endpoint-ku wuxuu isbarbardhigaa csrf cookie-ga iyo csrf body-ga.',
+    actionLabel: 'Beddel email-ka account-ka',
+    actionBefore: 'test@test.com',
+    actionAfter: 'attacker@evil.com',
+    objectives: [
+      'Adeegso CRLF injection si aad u beerato csrf=fake cookie',
+      'Body-ga ku dir isla qiimahaas si double-submit check-gu u gudbo',
+    ],
+    hints: [
+      'Server-ku wuxuu isbarbardhigaa body token-ka iyo cookie token-ka.',
+      'Haddii labaduba isku mid yihiin (fake), request-ka waa la aqbalayaa.',
+    ],
+    walkthrough: [
+      {
+        title: 'Statelessness-ku waa tanaasul',
+        body: 'Double submit-ku state-ka stateless ayuu ka dhigaa isagoo cookie adeegsanaya. Laakiin haddii weeraryahanku cookie-ga maamuli karo (CRLF), labada dhinacba waa laga dhigi karaa isku qiime.',
+      },
+      {
+        title: 'Xalka',
+        body: 'Token-ka random ka dhig, saxeex oo session-ka ku xidh; waligaa ha u oggolaan input dib loo soo bandhigay inuu header noqdo.',
+      },
+    ],
+  },
+
+  'referer-present': {
+    title: 'Referer validation oo maqnaanshaha aaminta',
+    summary:
+      'Referer validation-ku wuxuu shaqeeyaa oo keliya marka header-ku jiro. Haddii Referer maqan yahay, server-ku request-ka wuu aqbalaa.',
+    takeaway:
+      'Referer khasab ma aha. Haddii server-ku xaqiijiyo oo keliya marka uu jiro, weeraryahanku si fudud ayuu uga tagi karaa.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay lab-ka.',
+    actionLabel: 'Beddel email-ka account-ka',
+    actionBefore: 'test@test.com',
+    actionAfter: 'attacker@evil.com',
+    objectives: [
+      'Ka saar Referer header-ka oo ka gudub check-ga',
+      'Beddel email-ka iyadoo Referer maqan yahay',
+    ],
+    hints: [
+      'Referer wuu maqnaan karaa — adeegso <meta name="referrer" content="no-referrer">.',
+      'Dooro “Form → POST” oo orodsiiso request-ka.',
+    ],
+    walkthrough: [
+      {
+        title: 'Referer waa xogta macnaha guud',
+        body: 'Browser-ku si toos ah ayuu Referer u diraa, balse weeraryahanku wuu ka saari karaa. Haddii server-ku aanu hubin maqnaanshaha, request-ku wuu gudbayaa.',
+      },
+      {
+        title: 'Xalka',
+        body: 'Diid requests aan lahayn Referer (ama leh Origin madhan), ama Origin si sax ah u xaqiiji.',
+      },
+    ],
+  },
+
+  'referer-substring': {
+    title: 'Referer check eegaya qayb qoraal ah oo keliya',
+    summary:
+      'Referer validation-ku wuxuu adeegsadaa substring match. Wuxuu aqbalaa Referer: https://evil.example/?web-security-academy.net.',
+    takeaway:
+      'Contains waa ku-jirid; equals waa isku-mid ahaansho. Marka aad aqoonsi xaqiijinayso, sinnaanta hubi — marna ha ku tiirsanaan inuu qoraal meel ku jiro.',
+    victimDisclosure: 'Browser-kan waxaad signed in uga tahay lab-ka.',
+    actionLabel: 'Beddel email-ka account-ka',
+    actionBefore: 'test@test.com',
+    actionAfter: 'attacker@evil.com',
+    objectives: [
+      'Samee Referer uu domain-ka bartilmaameedku ku jiro balse meel kale tilmaamayo',
+      'Ka gudub substring check-ga oo beddel email-ka',
+    ],
+    hints: [
+      'Substring match-ku wuxuu aqbalaa https://evil.example/?web-security-academy.net.',
+      'Adeegso history.pushState("", "", "/?web-security-academy.net") dabadeed dir POST-ga.',
+    ],
+    walkthrough: [
+      {
+        title: 'Contains iyo equals',
+        body: 'Domain-ku wuxuu ka muuqan karaa host, query, fragment, subdomain ama path. Substring test-ku waxyaalahan midkoodna si sax ah uma kala saaro — equality oo keliya ayaa sidaas samaynaysa.',
+      },
+      {
+        title: 'Xalka',
+        body: 'Hubi in Origin/Referer oo dhammaystirani la mid yahay domain-kaaga.',
+      },
+    ],
+  },
+
+  'samesite-lax-override': {
+    title: 'SameSite=Lax oo loo adeegsaday method override',
+    summary:
+      'SameSite=Lax wuxuu cookie-ga diraa marka ay jiraan top-level GET navigations. Server-ku wuxuu aqbalaa _method=POST — sidaas darteed GET ayaa POST isu beddelaya.',
+    takeaway:
+      'SameSite=Lax wuxuu aamminaa top-level navigation, balse navigation-ka weeraryahanku wuu maamuli karaa. Method override-ku wuxuu buuxinayaa shuruudda POST.',
+    victimDisclosure: 'Waxaad signed in uga tahay lab-ka; cookie-gu waa SameSite=Lax.',
+    actionLabel: 'Beddel email-ka account-ka',
+    actionBefore: 'test@test.com',
+    actionAfter: 'attacker@evil.com',
+    objectives: [
+      'Adeegso top-level GET navigation si Lax cookie-gu u baxo',
+      'Ku dar _method=POST si endpoint-ku u aqbalo',
+    ],
+    hints: [
+      'Lax cookie laguma diro cross-site POST — balse waxaa lagu diraa top-level GET navigation.',
+      'Query string-ka ku dar &_method=POST, dabadeed adeegso “Link / redirect”.',
+    ],
+    walkthrough: [
+      {
+        title: 'Farqiga',
+        body: 'SameSite=Lax wuxuu arkaa GET; server-kuna POST ayuu arkaa. Labadu way is-khilaafaan — farqigaas ayaana weeraryahanku ka faa\'iidaystaa.',
+      },
+      {
+        title: 'Xalka',
+        body: 'Marna ha u oggolaan method override inuu xaalad beddelo; adeegso SameSite=Strict iyo token.',
+      },
+    ],
+  },
+
+  'samesite-strict-redirect': {
+    title: 'SameSite=Strict oo loo adeegsaday client-side redirect',
+    summary:
+      'SameSite=Strict wuxuu cookie-ga ka reebaa cross-site request kasta. Laakiin website-ku wuxuu leeyahay client-side redirect gadget oo kiciya request labaad oo same-site ah.',
+    takeaway:
+      'SameSite=Strict wuu fashilmaa marka website-ka laftiisu leeyahay gadget. Request 1 waa buundada (same-site), request 2-na waa ficilka.',
+    victimDisclosure: 'Waxaad signed in uga tahay lab-ka; cookie-gu waa SameSite=Strict.',
+    actionLabel: 'Beddel email-ka account-ka',
+    actionBefore: 'test@test.com',
+    actionAfter: 'attacker@evil.com',
+    objectives: [
+      'Ka hel website-ka client-side redirect gadget-ka',
+      'Buundada (request 1) ku xidh ficilka (request 2)',
+    ],
+    hints: [
+      'Gadget-ku wuxuu qaataa cross-site GET, dabadeedna client-side ayuu ugu redirect-gareeyaa URL same-site ah.',
+      'Dooro “Link / redirect” oo orodsiiso request-ka.',
+    ],
+    walkthrough: [
+      {
+        title: 'Client-side redirect',
+        body: 'Request 1 waa cross-site GET (cookie looma baahna). Gadget-ku browser-ka ayuu u leexiyaa URL same-site ah, Strict cookie-gana waa la diraa.',
+      },
+      {
+        title: 'Xalka',
+        body: 'Adeegso difaac heerar badan leh: token, Origin validation iyo adkaynta input-ka bog kasta oo gadget ahaan u shaqayn kara.',
+      },
+    ],
+  },
+
+  'samesite-strict-sibling': {
+    title: 'SameSite=Strict oo loo adeegsaday sibling-domain CSWSH',
+    summary:
+      'SameSite=Strict wuxuu cookie-ga ka reebaa cross-site requests. Laakiin sibling domain ayaa leh XSS, sidaas darteed weeraryahanku wuxuu sameeyaa same-site request (CSWSH).',
+    takeaway:
+      '“Site” ayaa ka ballaadhan “origin”. Sibling domain-ku waa isla site-ka — XSS-kaas ayaa ka gudba SameSite=Strict.',
+    victimDisclosure: 'Waxaad signed in uga tahay lab-ka; cookie-gu waa SameSite=Strict.',
+    actionLabel: 'Beddel email-ka account-ka',
+    actionBefore: 'test@test.com',
+    actionAfter: 'attacker@evil.com',
+    objectives: [
+      'Ka hel XSS-ka sibling domain-ka (cms-...)',
+      'Samee same-site request ka gudba SameSite=Strict',
+    ],
+    hints: [
+      'Sibling domain-ka (cms.example.com) wuxuu la wadaagaa isla site-ka.',
+      'XSS-ka sibling-ka ku jira wuxuu weeraryahanka u oggolaanayaa inuu diro same-site requests.',
+    ],
+    walkthrough: [
+      {
+        title: 'Site iyo origin',
+        body: 'Strict wuxuu ku salaysan yahay site. Sibling domain-ku waa isla site-ka balse origin kale ayuu leeyahay — sidaas darteed XSS-kaas ayaa ka gudba Strict.',
+      },
+      {
+        title: 'CSWSH',
+        body: 'WebSocket handshake-ku ma wato CSRF token. Same-site request-ku cookie-ga ayuu diraa, chat history-gana waa la xadaa.',
+      },
+    ],
+  },
+
+  'samesite-lax-refresh': {
+    title: 'SameSite=Lax oo loo adeegsaday cookie refresh',
+    summary:
+      'SameSite=Lax wuxuu leeyahay daaqad 2 daqiiqo ah — cookie hadda dib loo soo saaray wuxuu u dhaqmaa sida None.',
+    takeaway:
+      'Cookie refresh-ku wuxuu furaa daaqadda Lax. Weeraryahanku cookie-ga ayuu refresh-gareeyaa, dabadeedna POST ayuu diraa.',
+    victimDisclosure: 'Waxaad signed in uga tahay lab-ka; cookie-gu waa SameSite=Lax.',
+    actionLabel: 'Beddel email-ka account-ka',
+    actionBefore: 'test@test.com',
+    actionAfter: 'attacker@evil.com',
+    objectives: [
+      'Bogga bartilmaameedka ka fur tab cusub si cookie-ga dib loo soo saaro',
+      'Dir POST-ga inta daaqaddu furan tahay',
+    ],
+    hints: [
+      'Bogga top-level u fur (window.open) si Lax cookie-ga dib loo soo saaro.',
+      'Wax yar sug, dabadeed dir POST-ga (form).',
+    ],
+    walkthrough: [
+      {
+        title: 'Daaqadda',
+        body: 'Cookie hadda dib loo soo saaray wuxuu 2 ilbiriqsi u dhaqmaa sida None — sidaas darteed cross-site POST ayaa wadan kara.',
+      },
+      {
+        title: 'Xalka',
+        body: 'SameSite=Strict iyo session-bound token ayaa xidhaya daaqaddan.',
+      },
+    ],
+  },
+}

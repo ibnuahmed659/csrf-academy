@@ -34,18 +34,18 @@ export function runCsrf(
 
   trace.push(
     step(
-      'Craft',
-      'Attacker builds the lure',
-      `An attacker on a page they control embeds a ${spec.label.toLowerCase()} targeting ${url}.`,
+      'Diyaarin',
+      'Weeraryahanku wuxuu diyaariyay dabinka',
+      `Weeraryahan ku jira bog uu isagu maamulo ayaa ku dhex daray ${spec.label.toLowerCase()} oo u jeeda ${url}.`,
       'info',
     ),
   )
 
   trace.push(
     step(
-      'Victim',
-      `${scn.victim.name} opens the attacker page`,
-      `${scn.victim.name} is signed in to ${scn.victim.site} and, in the same browser, loads the attacker's page.`,
+      'Dhibanaha',
+      `${scn.victim.name} wuxuu furaa boggii weeraryahanka`,
+      `${scn.victim.name} wuxuu soo galay ${scn.victim.site}, isla browser-kaasna wuxuu furtaa boggii weeraryahanka.`,
       'info',
     ),
   )
@@ -60,21 +60,21 @@ export function runCsrf(
   } else if (defense.siblingXss) {
     cookieSent = true
     bypass = {
-      label: 'Same-site via sibling-domain XSS',
-      detail: `SameSite=${defense.sameSite.toUpperCase()} blocks cross-site requests, but the attacker runs code on a sibling domain that shares the same site. That request is same-site, so the browser attaches the cookie — the CSWSH path.`,
+      label: 'Same-site iyada oo loo marayo XSS domain-walaal',
+      detail: `SameSite=${defense.sameSite.toUpperCase()} wuxuu xannibaa codsiyada cross-site, laakiin weeraryahanku wuxuu koodh ku orodsiyaa domain-walaal la wadaago isla site-ka. Codsigaasi waa same-site, sidaas darteed browser-ku wuu ku daraa cookie-ga — waa dariiqa CSWSH.`,
     }
   } else if (defense.clientRedirect && topLevelGetNav) {
     cookieSent = true
     bypass = {
-      label: 'Same-site via client-side redirect',
-      detail: `The cross-site GET lands on a same-site redirect gadget which immediately bounces the browser (client-side) to the state-changing URL. That second hop is same-site, so the cookie is attached despite SameSite=${defense.sameSite.toUpperCase()}.`,
+      label: 'Same-site iyada oo loo marayo redirect client-side',
+      detail: `GET-ga cross-site wuxuu ku dhacaa gadget redirect same-site ah oo isla markiiba browser-ka (client-side) u leexiya URL-ka beddelaya xaaladda. Tallaabada labaad waa same-site, sidaas darteed cookie-ga waa la daray inkastoo SameSite=${defense.sameSite.toUpperCase()}.`,
     }
   } else if (defense.cookieInjection === 'refresh' && defense.sameSite === 'lax') {
     cookieSent = true
     bypass = {
-      label: 'Lax window opened by cookie refresh',
+      label: 'Daaqadda Lax oo lagu furay cookie refresh',
       detail:
-        'The attacker first loads the target top-level, which re-issues the Lax cookie and opens the 2-minute window in which Lax behaves like None. The following cross-site POST is then authenticated.',
+        'Weeraryahanku marka hore wuxuu top-level u rarayaa bartilmaameedka, kaas oo dib u soo saara cookie-ga Lax oo fura daaqadda 2-da daqiiqo ah ee Lax u dhaqmo sida None. POST-ga cross-site ee xiga markaas waa la aqoonsadaa.',
     }
   } else if (defense.sameSite === 'lax') {
     cookieSent = topLevelGetNav
@@ -85,14 +85,14 @@ export function runCsrf(
   if (!cookieSent) {
     const reason =
       defense.sameSite === 'strict'
-        ? 'SameSite=STRICT never attaches cookies to cross-site requests — not even top-level navigations.'
-        : `SameSite=LAX attaches cookies only to top-level GET navigations. This ${spec.kind === 'navigation' ? spec.method + ' navigation' : 'background ' + spec.method} is not one, so no cookie is sent.`
-    trace.push(step('Browser', 'Cookie withheld', reason, 'block'))
+        ? 'SameSite=STRICT marnaba cookies-ka kuma daro codsiyada cross-site — xitaa top-level navigations.'
+        : `SameSite=LAX wuxuu cookies-ka ku daraa oo keliya top-level GET navigations. ${spec.kind === 'navigation' ? spec.method + ' navigation' : 'background ' + spec.method} ma aha mid ka mid ah, sidaas darteed cookie lama diro.`
+    trace.push(step('Browser-ka', 'Cookie-ga waa la celiyay', reason, 'block'))
     trace.push(
       step(
-        'Server',
-        'Request is anonymous',
-        'Without a session the server cannot attribute the action to the victim — nothing changes.',
+        'Server-ka',
+        'Codsigu waa mid aan la aqoonsan',
+        'Maadaama uusan jirin session, server-ku ma awoodo inuu falka u nisbeeyo dhibanaha — waxba ma isbeddelaan.',
         'info',
       ),
     )
@@ -101,13 +101,13 @@ export function runCsrf(
 
   trace.push(
     step(
-      'Browser',
-      'Session cookie attached',
-      `Cookie is SameSite=${defense.sameSite.toUpperCase()}, so the browser attaches the victim's session to this request.`,
+      'Browser-ka',
+      'Session cookie-ga waa la daray',
+      `Cookie-gu waa SameSite=${defense.sameSite.toUpperCase()}, sidaas darteed browser-ku wuxuu request-kan ku daraa session-ka dhibanaha.`,
       'ok',
     ),
   )
-  if (bypass) trace.push(step('Browser', bypass.label, bypass.detail, 'warn'))
+  if (bypass) trace.push(step('Browser-ka', bypass.label, bypass.detail, 'warn'))
 
   // --- 2. Method discipline + method override -------------------------------
   const overridden = defense.methodOverride && spec.method === 'GET'
@@ -115,9 +115,9 @@ export function runCsrf(
   if (overridden) {
     trace.push(
       step(
-        'Server',
-        'Method override accepted',
-        'The request arrives as GET but carries _method=POST (or X-HTTP-Method-Override). The server honours it and processes the action as a POST.',
+        'Server-ka',
+        'Method override waa la aqbalay',
+        'Codsigu wuxuu yimaadaa isagoo GET ah laakiin wuxuu wataa _method=POST (ama X-HTTP-Method-Override). Server-ku wuu aqbalaa oo wuxuu falka u farsameeyaa sida POST.',
         'warn',
       ),
     )
@@ -126,9 +126,9 @@ export function runCsrf(
   if (defense.requirePost && effectiveMethod !== 'POST') {
     trace.push(
       step(
-        'Server',
-        'Rejected: method not allowed',
-        'The endpoint only accepts POST, and this request is a GET that was not overridden.',
+        'Server-ka',
+        'Waa la diiday: method lama oggola',
+        'Endpoint-ku wuxuu aqbalaa POST oo keliya, codsiganna waa GET aan la override-gelin.',
         'block',
       ),
     )
@@ -139,9 +139,9 @@ export function runCsrf(
   if (defense.customHeader) {
     trace.push(
       step(
-        'Server',
-        'Rejected: missing custom header',
-        'The endpoint requires a custom header (e.g. X-Requested-With). A cross-site HTML request cannot set one without a CORS preflight, which the server refuses.',
+        'Server-ka',
+        'Waa la diiday: custom header ayaa maqan',
+        'Endpoint-ku wuxuu dalbaa custom header (tusaale X-Requested-With). Codsi HTML cross-site ah ma dhigi karo mid la\'aantiis CORS preflight, oo server-ku diido.',
         'block',
       ),
     )
@@ -152,9 +152,9 @@ export function runCsrf(
   if (defense.originCheck) {
     trace.push(
       step(
-        'Server',
-        'Rejected: bad Origin',
-        `The server compares Origin/Referer. It sees the attacker's origin, not ${origin}, and drops the request.`,
+        'Server-ka',
+        'Waa la diiday: Origin khaldan',
+        `Server-ku wuxuu isbarbardhigaa Origin/Referer. Wuxuu arkaa asalka weeraryahanka, ma aha ${origin}, sidaas darteed wuu diidaa codsiga.`,
         'block',
       ),
     )
@@ -165,9 +165,9 @@ export function runCsrf(
   if (defense.refererCheck === 'exact') {
     trace.push(
       step(
-        'Server',
-        'Rejected: bad Referer',
-        `The server requires the Referer to equal ${origin}. A cross-site request always carries the attacker's referer, so it is dropped.`,
+        'Server-ka',
+        'Waa la diiday: Referer khaldan',
+        `Server-ku wuxuu dalbaa in Referer uu la mid noqdo ${origin}. Codsi cross-site ah had iyo jeer wuxuu wataa referer-ka weeraryahanka, sidaas darteed waa la diidaa.`,
         'block',
       ),
     )
@@ -176,18 +176,18 @@ export function runCsrf(
   if (defense.refererCheck === 'if-present') {
     trace.push(
       step(
-        'Server',
-        'Referer skipped when absent',
-        'The server validates the Referer only when the header is present. The attacker adds <meta name="referrer" content="no-referrer">, so the header is omitted and the check never runs.',
+        'Server-ka',
+        'Referer-ka waa la boodaa marka uu maqan yahay',
+        'Server-ku wuxuu xaqiijiyaa Referer oo keliya marka header-ku jiro. Weeraryahanku wuxuu ku daraa <meta name="referrer" content="no-referrer">, sidaas darteed header-ka waa la boodaa oo hubintu marnaba ma socoto.',
         'warn',
       ),
     )
   } else if (defense.refererCheck === 'contains') {
     trace.push(
       step(
-        'Server',
-        'Referer passes a substring test',
-        `The server only checks whether the Referer *contains* "${scn.victim.site}". The attacker supplies https://evil.example/?${scn.victim.site}, which contains it, and passes.`,
+        'Server-ka',
+        'Referer-ku wuxuu dhaafaa imtixaanka substring',
+        `Server-ku wuxuu oo keliya hubiyaa haddii Referer *ku jiro* "${scn.victim.site}". Weeraryahanku wuxuu bixiyaa https://evil.example/?${scn.victim.site}, kaas oo ku jira, sidaas darteed wuu dhaafaa.`,
         'warn',
       ),
     )
@@ -197,27 +197,27 @@ export function runCsrf(
   if (defense.token === 'none') {
     trace.push(
       step(
-        'Server',
-        'No token expected',
-        'The endpoint never asks for an anti-CSRF token — there is nothing to verify.',
+        'Server-ka',
+        'Token lama filayo',
+        'Endpoint-ku marnaba ma dalbado anti-CSRF token — waxba lama xaqiijinayo.',
         'warn',
       ),
     )
   } else if (defense.tokenMethodBound && spec.method === 'GET') {
     trace.push(
       step(
-        'Server',
-        'Token not checked on GET',
-        'The token is only validated for POST requests. Because this forged request is a GET, the token requirement is skipped entirely.',
+        'Server-ka',
+        'Token-ka lama hubiyo GET-ka',
+        'Token-ka waxaa la xaqiijiyaa oo keliya codsiyada POST. Maadaama codsigan been-abuurka ahi yahay GET, shuruudda token-ka gebi ahaanba waa la boodaa.',
         'warn',
       ),
     )
   } else if (defense.token === 'presence') {
     trace.push(
       step(
-        'Server',
-        'Token only checked if present',
-        'The server wraps token validation in an "if the parameter exists" condition. The attacker simply omits the csrf parameter, so the check is bypassed.',
+        'Server-ka',
+        'Token-ka waxaa la hubiyaa oo keliya haddii uu jiro',
+        'Server-ku wuxuu xaqiijinta token-ka ku duubay shuruud "haddii parameter-ku jiro". Weeraryahanku si fudud ayuu u boodaa parameter-ka csrf, sidaas darteed hubinta waa la dhaafaa.',
         'warn',
       ),
     )
@@ -226,9 +226,9 @@ export function runCsrf(
     if (!hasToken) {
       trace.push(
         step(
-          'Server',
-          'Rejected: missing CSRF token',
-          'The endpoint expects a CSRF token but the forged request carried none.',
+          'Server-ka',
+          'Waa la diiday: CSRF token ayaa maqan',
+          'Endpoint-ku wuxuu filayaa CSRF token laakiin codsigii been-abuurka ahaa midna ma qaadan.',
           'block',
         ),
       )
@@ -237,9 +237,9 @@ export function runCsrf(
     if (defense.token === 'unbound') {
       trace.push(
         step(
-          'Server',
-          'Token accepted (but not session-bound!)',
-          `The server checks the supplied token ("${attack.token}") against a shared pool instead of the victim's session. Any valid-looking token is accepted — so the attacker's own token sails through.`,
+          'Server-ka',
+          'Token waa la aqbalay (laakiin session kuma xidhna!)',
+          `Server-ku wuxuu token-ka la bixiyay ("${attack.token}") ku barbardhigaa keyd la wadaago halkii session-ka dhibanaha. Token kasta oo u eg mid sax ah waa la aqbalaa — sidaas darteed token-ka weeraryahanka ayaa si fudud u dhaafaa.`,
           'warn',
         ),
       )
@@ -247,18 +247,18 @@ export function runCsrf(
       if (defense.cookieInjection === 'crlf') {
         trace.push(
           step(
-            'Server',
-            'Cookie-bound token forged via CRLF',
-            'The token is compared with a cookie value. A reflected CRLF in the search endpoint lets the attacker plant a matching cookie in the victim browser, so both sides equal the attacker value.',
+            'Server-ka',
+            'Token-ka cookie-ga ku xidhan waxaa lagu been-abuuray CRLF',
+            'Token-ka waxaa lala barbardhigaa qiime cookie. CRLF la soo celiyay oo ku jira endpoint-ka raadinta ayaa u oggolaanaya weeraryahanka inuu dhex geliyo cookie u dhigma browser-ka dhibanaha, sidaas darteed labada dhinac waxay noqdaan qiimaha weeraryahanka.',
             'warn',
           ),
         )
       } else {
         trace.push(
           step(
-            'Server',
-            'Rejected: cookie-bound token',
-            'The token must equal the value in the victim cookie, which the attacker cannot set or read.',
+            'Server-ka',
+            'Waa la diiday: token cookie-ga ku xidhan',
+            'Token-ku waa inuu la mid noqdaa qiimaha cookie-ga dhibanaha, kaas oo weeraryahanku aanu dhigi ama akhrin karin.',
             'block',
           ),
         )
@@ -269,9 +269,9 @@ export function runCsrf(
       if (attack.token !== scn.sessionToken) {
         trace.push(
           step(
-            'Server',
-            'Rejected: invalid CSRF token',
-            `The token must match the value minted into ${scn.victim.name}'s session. The attacker cannot read it, so the forged value is rejected.`,
+            'Server-ka',
+            'Waa la diiday: CSRF token aan sax ahayn',
+            `Token-ku waa inuu la mid noqdaa qiimaha lagu abuuray session-ka ${scn.victim.name}. Weeraryahanku ma akhrin karo, sidaas darteed qiimaha been-abuurka ah waa la diidaa.`,
             'block',
           ),
         )
@@ -279,9 +279,9 @@ export function runCsrf(
       }
       trace.push(
         step(
-          'Server',
-          'Token accepted',
-          'The supplied token matches the victim session. This only happens when the token leaked or is guessable.',
+          'Server-ka',
+          'Token waa la aqbalay',
+          'Token-ka la bixiyay wuxuu la mid yahay session-ka dhibanaha. Tan waxay dhacdaa oo keliya marka token-ku soo daadegay ama la qiyaasi karo.',
           'warn',
         ),
       )
@@ -291,65 +291,65 @@ export function runCsrf(
   // --- 7. Impact -------------------------------------------------------------
   trace.push(
     step(
-      'Impact',
-      'State changed — attack succeeded',
-      `${scn.action.label}: "${scn.action.before}" → "${scn.action.after}". The victim never intended this.`,
+      'Saamaynta',
+      'Xaaladdii waa isbeddeshay — weerarkii waa guulaystay',
+      `${scn.action.label}: "${scn.action.before}" → "${scn.action.after}". Dhibanuhu marnaba ma ujeedin tan.`,
       'ok',
     ),
   )
 
-  trace.push(step('Analysis', pwnedNote(defense), reusedHint(defense), 'info'))
+  trace.push(step('Falanqayn', pwnedNote(defense), reusedHint(defense), 'info'))
 
   return { pwned: true, trace }
 }
 
 function pwnedNote(defense: Defense): string {
   const gaps: string[] = []
-  if (defense.token === 'none') gaps.push('no anti-CSRF token')
-  if (defense.token === 'presence') gaps.push('a token only validated when present')
-  if (defense.token === 'unbound') gaps.push('a token not bound to the session')
+  if (defense.token === 'none') gaps.push('anti-CSRF token')
+  if (defense.token === 'presence') gaps.push('token la xaqiijiyo oo keliya marka uu jiro')
+  if (defense.token === 'unbound') gaps.push('token aan session-ka ku xidhnayn')
   if (defense.token === 'cookie' && defense.cookieInjection === 'crlf')
-    gaps.push('a cookie-bound token that CRLF can forge')
-  if (defense.tokenMethodBound) gaps.push('a token only checked on POST')
-  if (!defense.originCheck) gaps.push('no Origin validation')
-  if (defense.refererCheck === 'if-present') gaps.push('Referer validation that skips a missing header')
-  if (defense.refererCheck === 'contains') gaps.push('substring Referer matching')
-  if (!defense.requirePost) gaps.push('a GET-triggerable endpoint')
-  if (!defense.customHeader) gaps.push('no required custom header')
-  if (defense.methodOverride) gaps.push('a method-override parameter')
-  if (defense.cookieInjection === 'refresh') gaps.push('a refreshable Lax cookie window')
-  if (defense.clientRedirect) gaps.push('a client-side redirect gadget')
-  if (defense.siblingXss) gaps.push('a sibling-domain XSS')
+    gaps.push('token cookie-ga ku xidhan oo CRLF been-abuuri karo')
+  if (defense.tokenMethodBound) gaps.push('token la hubiyo oo keliya POST-ka')
+  if (!defense.originCheck) gaps.push('xaqiijinta Origin')
+  if (defense.refererCheck === 'if-present') gaps.push('xaqiijinta Referer oo booda header-ka maqan')
+  if (defense.refererCheck === 'contains') gaps.push('isbarbardhigga Referer substring')
+  if (!defense.requirePost) gaps.push('endpoint lagu kicin karo GET')
+  if (!defense.customHeader) gaps.push('custom header loo baahan yahay')
+  if (defense.methodOverride) gaps.push('parameter method-override')
+  if (defense.cookieInjection === 'refresh') gaps.push('daaqadda Lax cookie oo la refresh-gelin karo')
+  if (defense.clientRedirect) gaps.push('gadget redirect client-side')
+  if (defense.siblingXss) gaps.push('XSS domain-walaal')
   if (defense.sameSite === 'none') gaps.push('SameSite=None')
   return gaps.length
-    ? 'The request slipped through because the endpoint had ' + joinList(gaps) + '.'
-    : 'Multiple defenses were missing.'
+    ? 'Codsigu wuu dhaafay sababtoo ah endpoint-ka waxaa ka maqnaa ' + joinList(gaps) + '.'
+    : 'Difaacyo badan ayaa maqnaa.'
 }
 
 function reusedHint(defense: Defense): string {
   if (defense.token === 'presence')
-    return 'Fix: require the token to be present AND valid — never wrap the check in "if it exists".'
+    return 'Xal: dalbo in token-ku jiro OO uu sax yahay — marnaba ha ku duubin hubinta "haddii uu jiro".'
   if (defense.tokenMethodBound)
-    return 'Fix: validate the token for every method, not just POST.'
+    return 'Xal: token-ka u xaqiiji method kasta, ma aha POST oo keliya.'
   if (defense.token === 'cookie' && defense.cookieInjection === 'crlf')
-    return 'Fix: stop reflecting CRLF (input comes back as an output header), and bind the token to the session server-side.'
+    return 'Xal: jooji soo-celinta CRLF (input-ku wuxuu dib ugu soo noqdaa sida header output), oo token-ka server-side kaga xidh session-ka.'
   if (defense.refererCheck === 'if-present')
-    return 'Fix: if you validate Referer, reject requests that omit it (or empty-Origin cases) too.'
+    return 'Xal: haddii aad xaqiijinayso Referer, sidoo kale diid codsiyada aan isaga lahayn (ama kiisaska Origin madhan).'
   if (defense.refererCheck === 'contains')
-    return 'Fix: compare the full origin for equality — never a substring.'
+    return 'Xal: isbarbardhig asalka buuxa si isku mid ah — marnaba ha isticmaalin substring.'
   if (defense.cookieInjection === 'refresh')
-    return 'Fix: set SameSite=Strict, or pair Lax with a session-bound token.'
+    return 'Xal: deji SameSite=Strict, ama Lax kula lammaani token session-ka ku xidhan.'
   if (!defense.originCheck && defense.token === 'none')
-    return 'Fix: add a session-bound token AND validate Origin — either alone is a strong deterrent.'
+    return 'Xal: ku dar token session-ka ku xidhan OO xaqiiji Origin — mid kasta keligiisba waa cabsi-adag.'
   if (defense.token === 'unbound')
-    return 'Fix: bind the token to the user session (per-session secret), not a shared value.'
-  return 'Fix: turn on the remaining defenses in the Defense panel and re-run.'
+    return 'Xal: token-ka ku xidh session-ka isticmaalaha (sir gaar u ah session kasta), ma aha qiime la wadaago.'
+  return 'Xal: daar difaacyada haray ee Panel-ka difaaca oo mar kale orodsiiso.'
 }
 
 function joinList(items: string[]): string {
   if (items.length === 1) return items[0]
-  if (items.length === 2) return `${items[0]} and ${items[1]}`
-  return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`
+  if (items.length === 2) return `${items[0]} iyo ${items[1]}`
+  return `${items.slice(0, -1).join(', ')}, iyo ${items[items.length - 1]}`
 }
 
 export function attackSnippet(scn: LabScenario, attack: AttackInput): string {

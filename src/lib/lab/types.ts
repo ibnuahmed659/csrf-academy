@@ -71,7 +71,7 @@ export const VECTORS: Record<Vector, VectorSpec> = {
     kind: 'subresource',
     auto: true,
     carriesBody: false,
-    blurb: 'An <img> fires a GET the instant the victim loads the attacker page.',
+    blurb: 'Sawir <img> ayaa diraya GET isla markiiba marka dhibanuhu furto boggii weeraryahanka.',
     snippet: (url, params) => `<img src="${withQuery(url, params)}">`,
   },
   'form-get': {
@@ -81,7 +81,7 @@ export const VECTORS: Record<Vector, VectorSpec> = {
     kind: 'navigation',
     auto: true,
     carriesBody: false,
-    blurb: 'An auto-submitting form runs a top-level GET navigation.',
+    blurb: 'Form si otomaatig ah isu diraya ayaa wada top-level GET navigation.',
     snippet: (url, params) =>
       `<form action="${url}" method="GET">\n${hiddenInputs(params)}</form>\n<script>document.forms[0].submit()</script>`,
   },
@@ -92,7 +92,7 @@ export const VECTORS: Record<Vector, VectorSpec> = {
     kind: 'navigation',
     auto: true,
     carriesBody: true,
-    blurb: 'The classic: a hidden form auto-submits a cross-site POST.',
+    blurb: 'Tan caadiga ah: form qarsoon oo si otomaatig ah u dira cross-site POST.',
     snippet: (url, params) =>
       `<form action="${url}" method="POST">\n${hiddenInputs(params)}</form>\n<script>document.forms[0].submit()</script>`,
   },
@@ -103,7 +103,7 @@ export const VECTORS: Record<Vector, VectorSpec> = {
     kind: 'navigation',
     auto: false,
     carriesBody: false,
-    blurb: 'A lure the victim clicks (or a redirect) issues a top-level GET.',
+    blurb: 'Dabin uu dhibanuhu gujiyo (ama redirect) ayaa soo saara top-level GET.',
     snippet: (url, params) => `<a href="${withQuery(url, params)}">Click to claim your prize</a>`,
   },
   iframe: {
@@ -113,7 +113,7 @@ export const VECTORS: Record<Vector, VectorSpec> = {
     kind: 'subresource',
     auto: true,
     carriesBody: false,
-    blurb: 'A 0×0 iframe silently requests the endpoint in the background.',
+    blurb: 'Iframe 0×0 ah oo aamusnaan u codsada endpoint-ka gadaal.',
     snippet: (url, params) => `<iframe src="${withQuery(url, params)}" width="0" height="0"></iframe>`,
   },
   fetch: {
@@ -123,7 +123,7 @@ export const VECTORS: Record<Vector, VectorSpec> = {
     kind: 'fetch',
     auto: true,
     carriesBody: true,
-    blurb: 'A scripted fetch — the response may be blocked by CORS, but the request still fires.',
+    blurb: 'Fetch script ah — jawaabta waxaa laga yaabaa in CORS xannibo, laakiin codsigu weli wuu baxaa.',
     snippet: (url, params) =>
       `fetch("${url}", {\n  method: "POST",\n  body: new URLSearchParams(${JSON.stringify(params)})\n});`,
   },
@@ -211,10 +211,10 @@ export const STAGE_ORDER: Stage[] = [
 ]
 
 export const STAGE_LABEL: Record<Stage, string> = {
-  beginner: 'Beginner',
-  intermediate: 'Intermediate',
-  advanced: 'Advanced',
-  professional: 'Professional',
+  beginner: 'Bilow',
+  intermediate: 'Dhexdhexaad',
+  advanced: 'Sare',
+  professional: 'Xirfadle',
 }
 
 export function defaultTrace(): TraceStep[] {
